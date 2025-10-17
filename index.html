@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>unhead</title>
+    <title>ねもうすちゃんねる v5</title>
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-storage-compat.js"></script>
     <style>
-        /* --- General Styles & Variables --- */
+        /* CSSは前回のバージョンから変更ありません */
         :root {
             --bg-color: #121212;
             --primary-surface-color: #1e1e1e;
@@ -21,60 +21,23 @@
             --accent-hover-color: #0056b3;
             --error-color: #cf6679;
         }
-
-        body {
-            margin: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--primary-text-color);
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        /* --- Authentication Screen --- */
-        #auth-container {
-            width: 100%;
-            max-width: 340px;
-            padding: 30px;
-            box-sizing: border-box;
-        }
-        .auth-form {
-            background-color: var(--primary-surface-color);
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-        }
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-color); color: var(--primary-text-color); overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        #auth-container { width: 100%; max-width: 340px; padding: 30px; box-sizing: border-box; }
+        .auth-form { background-color: var(--primary-surface-color); padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); }
         .auth-form h1 { text-align: center; margin-top: 0; }
-        .auth-form input {
-            width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--secondary-surface-color); background-color: var(--bg-color); color: var(--primary-text-color); border-radius: 5px; box-sizing: border-box; font-size: 16px;
-        }
-        .auth-form button {
-            width: 100%; padding: 12px; border: none; background-color: var(--accent-color); color: white; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background-color 0.3s;
-        }
+        .auth-form input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid var(--secondary-surface-color); background-color: var(--bg-color); color: var(--primary-text-color); border-radius: 5px; box-sizing: border-box; font-size: 16px; }
+        .auth-form button { width: 100%; padding: 12px; border: none; background-color: var(--accent-color); color: white; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background-color 0.3s; }
         .auth-form button:hover { background-color: var(--accent-hover-color); }
         .toggle-form { text-align: center; margin-top: 20px; font-size: 14px; }
         .toggle-form a { color: var(--accent-color); text-decoration: none; cursor: pointer; }
-
-        /* --- Main App Container --- */
-        #app-container {
-            width: 100vw; height: 100vh; display: none;
-        }
-        
-        /* --- Sidebar --- */
-        .sidebar {
-            width: 280px; background-color: var(--primary-surface-color); display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; transition: transform 0.3s ease-in-out;
-        }
+        #app-container { width: 100vw; height: 100vh; display: none; }
+        .sidebar { width: 280px; background-color: var(--primary-surface-color); display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; transition: transform 0.3s ease-in-out; }
         .sidebar-header { padding-bottom: 15px; border-bottom: 1px solid var(--secondary-surface-color); }
         .user-profile { display: flex; align-items: center; cursor: pointer; }
         .user-profile .avatar { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 10px; }
         .user-profile .username { font-weight: bold; font-size: 16px; }
         .sidebar-controls { margin-top: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .sidebar-controls button {
-            padding: 8px 10px; background-color: var(--secondary-surface-color); border: none; color: var(--primary-text-color); cursor: pointer; border-radius: 5px; font-size: 14px; text-align: center;
-        }
+        .sidebar-controls button { padding: 8px 10px; background-color: var(--secondary-surface-color); border: none; color: var(--primary-text-color); cursor: pointer; border-radius: 5px; font-size: 14px; text-align: center; }
         .friend-list-section { flex-grow: 1; overflow-y: auto; margin-top: 15px; }
         .friend-list-section h3 { margin-top: 0; color: var(--secondary-text-color); font-size: 14px; padding-bottom: 5px; }
         .friend-item, .request-item { display: flex; align-items: center; padding: 10px; border-radius: 5px; cursor: pointer; margin-bottom: 5px; }
@@ -83,14 +46,8 @@
         .friend-item .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 10px; }
         .request-item-info { flex-grow: 1; }
         .request-item-actions button { background: none; border: none; color: var(--primary-text-color); font-size: 18px; cursor: pointer; margin-left: 5px; }
-
-        /* --- Chat View --- */
-        .chat-view {
-            flex-grow: 1; display: flex; flex-direction: column; background-size: cover; background-position: center; position: relative;
-        }
-        .chat-header {
-            padding: 15px 20px; background-color: rgba(30, 30, 30, 0.8); backdrop-filter: blur(5px); border-bottom: 1px solid var(--secondary-surface-color); display: flex; align-items: center;
-        }
+        .chat-view { flex-grow: 1; display: flex; flex-direction: column; background-size: cover; background-position: center; position: relative; }
+        .chat-header { padding: 15px 20px; background-color: rgba(30, 30, 30, 0.8); backdrop-filter: blur(5px); border-bottom: 1px solid var(--secondary-surface-color); display: flex; align-items: center; }
         .menu-toggle { display: none; background: none; border: none; color: white; font-size: 24px; cursor: pointer; margin-right: 15px; }
         .chat-messages { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column-reverse; }
         .message-wrapper { display: flex; margin-bottom: 15px; max-width: 70%; }
@@ -104,25 +61,16 @@
         .message-content img.embedded, .message-content video.embedded, .message-content img.stamp { max-width: 250px; border-radius: 10px; margin-top: 5px; }
         .message-content .timestamp { font-size: 10px; color: var(--secondary-text-color); text-align: right; margin-top: 5px; }
         .message-wrapper.own .message-content .timestamp { color: rgba(255, 255, 255, 0.7); }
-
         .chat-input-area { padding: 15px; background-color: rgba(30, 30, 30, 0.8); backdrop-filter: blur(5px); position: relative; }
         .chat-input-container { display: flex; align-items: center; }
         .chat-input-container button { background: none; border: none; color: var(--secondary-text-color); font-size: 22px; cursor: pointer; padding: 8px; }
         #chat-input { flex-grow: 1; padding: 12px; border: none; border-radius: 20px; background-color: var(--secondary-surface-color); color: var(--primary-text-color); margin: 0 10px; font-size: 16px; }
         #chat-send-button { background-color: var(--accent-color); color: white; border-radius: 50%; width: 44px; height: 44px; font-size: 20px; }
-
-        #stamp-panel {
-            display: none; position: absolute; bottom: 80px; left: 20px; background-color: var(--tertiary-surface-color); padding: 10px; border-radius: 10px; box-shadow: 0 -2px 10px rgba(0,0,0,0.3); display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
-        }
+        #stamp-panel { display: none; position: absolute; bottom: 80px; left: 20px; background-color: var(--tertiary-surface-color); padding: 10px; border-radius: 10px; box-shadow: 0 -2px 10px rgba(0,0,0,0.3); display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
         #stamp-panel img { width: 60px; height: 60px; cursor: pointer; transition: transform 0.2s; }
         #stamp-panel img:hover { transform: scale(1.1); }
-        
         #chat-placeholder { display: flex; justify-content: center; align-items: center; height: 100%; color: var(--secondary-text-color); font-size: 20px; text-align: center; }
-        
-        /* --- Modals & Loaders --- */
-        .modal {
-            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center;
-        }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
         .modal-content { background-color: var(--primary-surface-color); padding: 30px; border-radius: 10px; width: 90%; max-width: 450px; }
         .modal-content h2 { margin-top: 0; }
         .modal-content input { width: 100%; padding: 10px; margin-bottom: 10px; box-sizing: border-box; background-color: var(--bg-color); border: 1px solid var(--secondary-surface-color); color: var(--primary-text-color); }
@@ -130,20 +78,10 @@
         .modal-controls button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
         .modal-controls .save-btn { background-color: var(--accent-color); color: white; }
         .modal-controls .cancel-btn { background-color: var(--secondary-surface-color); color: var(--primary-text-color); margin-left: 10px; }
-        
-        .loader {
-            position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 1001;
-            border: 4px solid var(--secondary-surface-color); border-top: 4px solid var(--accent-color); border-radius: 50%;
-            width: 40px; height: 40px; animation: spin 1s linear infinite;
-        }
+        .loader { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 1001; border: 4px solid var(--secondary-surface-color); border-top: 4px solid var(--accent-color); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
-
-        /* --- Responsive Design for Mobile --- */
         @media (max-width: 768px) {
-            .sidebar {
-                position: fixed; left: 0; top: 0; height: 100%; z-index: 200;
-                transform: translateX(-100%); box-shadow: 2px 0 10px rgba(0,0,0,0.5);
-            }
+            .sidebar { position: fixed; left: 0; top: 0; height: 100%; z-index: 200; transform: translateX(-100%); box-shadow: 2px 0 10px rgba(0,0,0,0.5); }
             .sidebar.open { transform: translateX(0); }
             .menu-toggle { display: block; }
             .chat-messages { max-width: 100%; }
@@ -154,72 +92,14 @@
     </style>
 </head>
 <body>
-
     <div id="auth-container">
-        <div class="auth-form" id="login-form">
-            <h1>ログイン</h1>
-            <input type="email" id="login-email" placeholder="メールアドレス" required>
-            <input type="password" id="login-password" placeholder="パスワード" required>
-            <button id="login-button">ログイン</button>
-            <p class="toggle-form">アカウントがありませんか？ <a id="show-signup">サインアップ</a></p>
-        </div>
-        <div class="auth-form" id="signup-form" style="display: none;">
-            <h1>サインアップ</h1>
-            <input type="text" id="signup-username" placeholder="表示名" required>
-            <input type="email" id="signup-email" placeholder="メールアドレス" required>
-            <input type="password" id="signup-password" placeholder="パスワード" required>
-            <button id="signup-button">サインアップ</button>
-            <p class="toggle-form">アカウントをお持ちですか？ <a id="show-login">ログイン</a></p>
-        </div>
+        <div class="auth-form" id="login-form"><h1>ログイン</h1><input type="email" id="login-email" placeholder="メールアドレス" required><input type="password" id="login-password" placeholder="パスワード" required><button id="login-button">ログイン</button><p class="toggle-form">アカウントがありませんか？ <a id="show-signup">サインアップ</a></p></div>
+        <div class="auth-form" id="signup-form" style="display: none;"><h1>サインアップ</h1><input type="text" id="signup-username" placeholder="表示名" required><input type="email" id="signup-email" placeholder="メールアドレス" required><input type="password" id="signup-password" placeholder="パスワード" required><button id="signup-button">サインアップ</button><p class="toggle-form">アカウントをお持ちですか？ <a id="show-login">ログイン</a></p></div>
     </div>
-
     <div id="app-container">
-        <div class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="user-profile" id="edit-profile-btn">
-                    <img id="user-avatar-sidebar" src="" alt="Avatar" class="avatar">
-                    <span id="user-name-sidebar" class="username"></span>
-                </div>
-            </div>
-            <div class="sidebar-controls">
-                <button id="add-friend-btn">フレンド追加</button>
-                <button id="change-bg-btn">背景変更</button>
-                <button id="logout-button" style="grid-column: 1 / -1;">ログアウト</button>
-            </div>
-            <div id="friend-requests" class="friend-list-section">
-                <h3>フレンド申請</h3>
-                <div id="friend-requests-list"></div>
-            </div>
-            <div id="friends" class="friend-list-section">
-                <h3>フレンド</h3>
-                <div id="friend-list-container"></div>
-            </div>
-        </div>
-
-        <div id="chat-view" class="chat-view">
-            <div id="chat-placeholder">
-                <p>←<br>フレンドを選択して<br>チャットを開始</p>
-            </div>
-            <div id="chat-area" style="display: none; flex-direction: column; height: 100%;">
-                <div class="chat-header">
-                    <button class="menu-toggle" id="menu-toggle">☰</button>
-                    <span id="chat-header-name"></span>
-                </div>
-                <div id="chat-messages"></div>
-                <div class="chat-input-area">
-                    <div id="stamp-panel"></div>
-                    <div class="chat-input-container">
-                        <input type="file" id="file-upload-input" accept="image/*,video/*" style="display: none;">
-                        <button id="file-upload-button">📎</button>
-                        <button id="stamp-button">😀</button>
-                        <input type="text" id="chat-input" placeholder="メッセージを入力...">
-                        <button id="chat-send-button">➤</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <div class="sidebar" id="sidebar"><div class="sidebar-header"><div class="user-profile" id="edit-profile-btn"><img id="user-avatar-sidebar" src="" alt="Avatar" class="avatar"><span id="user-name-sidebar" class="username"></span></div></div><div class="sidebar-controls"><button id="add-friend-btn">フレンド追加</button><button id="change-bg-btn">背景変更</button><button id="logout-button" style="grid-column: 1 / -1;">ログアウト</button></div><div id="friend-requests" class="friend-list-section"><h3>フレンド申請</h3><div id="friend-requests-list"></div></div><div id="friends" class="friend-list-section"><h3>フレンド</h3><div id="friend-list-container"></div></div></div>
+        <div id="chat-view" class="chat-view"><div id="chat-placeholder"><p>←<br>フレンドを選択して<br>チャットを開始</p></div><div id="chat-area" style="display: none; flex-direction: column; height: 100%;"><div class="chat-header"><button class="menu-toggle" id="menu-toggle">☰</button><span id="chat-header-name"></span></div><div id="chat-messages"></div><div class="chat-input-area"><div id="stamp-panel"></div><div class="chat-input-container"><input type="file" id="file-upload-input" accept="image/*,video/*" style="display: none;"><button id="file-upload-button">📎</button><button id="stamp-button">😀</button><input type="text" id="chat-input" placeholder="メッセージを入力..."><button id="chat-send-button">➤</button></div></div></div></div>
     </div>
-
     <div id="profile-modal" class="modal"><div class="modal-content"></div></div>
     <div id="add-friend-modal" class="modal"><div class="modal-content"></div></div>
     <div id="background-modal" class="modal"><div class="modal-content"></div></div>
@@ -242,20 +122,12 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
-        const storage = firebase.storage();
+        const storage = firebase.storage(); // チャットのファイルアップロード用に残します
 
-        // --- Global State ---
+        // --- Global State & Utils (変更なし) ---
         let currentUser = null;
         let currentChatId = null;
         let messageListener = null;
-
-        // --- Stamp Data ---
-        const stamps = [
-            'https://firebasestorage.googleapis.com/v0/b/nemousu-636eb.appspot.com/o/stamps%2Fstamp01.png?alt=media&token=e9e62b08-62d2-4b71-9b16-563d763ed7ac',
-            'https://firebasestorage.googleapis.com/v0/b/nemousu-636eb.appspot.com/o/stamps%2Fstamp02.png?alt=media&token=42d10667-d864-4e78-9a49-2e11e3b56417',
-        ];
-
-        // --- DOM Elements & Utils ---
         const byId = id => document.getElementById(id);
         const showLoader = () => byId('loader-modal').style.display = 'flex';
         const hideLoader = () => byId('loader-modal').style.display = 'none';
@@ -266,7 +138,7 @@
         };
         const closeModal = (id) => byId(id).style.display = 'none';
 
-        // --- Authentication ---
+        // --- Authentication & App Setup (変更なし) ---
         auth.onAuthStateChanged(user => {
             const authContainer = byId('auth-container');
             const appContainer = byId('app-container');
@@ -284,7 +156,6 @@
                 }
             }
         });
-
         const setupAppForUser = (user) => {
             database.ref(`users/${user.uid}`).on('value', snapshot => {
                 const userData = snapshot.val();
@@ -292,7 +163,6 @@
                 currentUser.displayName = userData.username;
                 currentUser.photoURL = userData.photoURL;
                 currentUser.backgroundURL = userData.backgroundURL;
-                
                 byId('user-avatar-sidebar').src = userData.photoURL || '';
                 byId('user-name-sidebar').textContent = userData.username;
                 byId('chat-view').style.backgroundImage = `url(${userData.backgroundURL || ''})`;
@@ -301,162 +171,162 @@
             loadFriendRequests();
             setupEventListeners();
         };
-
-        // --- Event Listeners ---
+        
+        // --- Event Listeners (変更なし) ---
         let listenersInitialized = false;
         function setupEventListeners() {
             if (listenersInitialized) return;
-            
             byId('show-signup').addEventListener('click', () => { byId('login-form').style.display = 'none'; byId('signup-form').style.display = 'block'; });
             byId('show-login').addEventListener('click', () => { byId('login-form').style.display = 'block'; byId('signup-form').style.display = 'none'; });
             byId('signup-button').addEventListener('click', handleSignup);
             byId('login-button').addEventListener('click', handleLogin);
             byId('logout-button').addEventListener('click', () => auth.signOut());
-
             byId('edit-profile-btn').addEventListener('click', showProfileModal);
             byId('add-friend-btn').addEventListener('click', showAddFriendModal);
             byId('change-bg-btn').addEventListener('click', showBackgroundModal);
             byId('menu-toggle').addEventListener('click', () => byId('sidebar').classList.toggle('open'));
-
             byId('chat-send-button').addEventListener('click', sendMessage);
             byId('chat-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
             byId('file-upload-button').addEventListener('click', () => byId('file-upload-input').click());
             byId('file-upload-input').addEventListener('change', handleFileUpload);
             byId('stamp-button').addEventListener('click', toggleStampPanel);
-
             listenersInitialized = true;
         }
 
-        // --- Auth Handlers ---
-        function handleSignup() { /* ... unchanged ... */ }
-        function handleLogin() { /* ... unchanged ... */ }
-        
-        // --- Modal & Logic Handlers ---
-        function showProfileModal() { /* ... unchanged ... */ }
-        async function handleProfileSave() { /* ... unchanged ... */ }
-        
-        function showAddFriendModal() {
-            openModal('add-friend-modal', `
-                <h2>フレンドを追加</h2>
-                <input type="text" id="search-user-input" placeholder="表示名で検索">
-                <button id="search-user-btn" class="save-btn" style="width:100%">検索</button>
-                <div id="search-results" style="margin-top: 15px;"></div>
+        // --- Profile Modal & Save Logic ---
+        function showProfileModal() {
+            openModal('profile-modal', `
+                <h2>プロフィール編集</h2>
+                <img id="profile-avatar-preview" src="${currentUser.photoURL}" alt="Avatar" style="width: 100px; height: 100px; border-radius: 50%; cursor: pointer; object-fit: cover; display: block; margin: 0 auto 15px;">
+                <input type="file" id="avatar-upload-input" style="display: none;" accept="image/jpeg, image/png, image/gif">
+                <label>表示名</label>
+                <input type="text" id="profile-username-input" value="${currentUser.displayName}">
                 <div class="modal-controls">
-                    <button class="cancel-btn" onclick="closeModal('add-friend-modal')">閉じる</button>
+                    <button id="save-profile-btn" class="save-btn">保存</button>
+                    <button class="cancel-btn" onclick="closeModal('profile-modal')">キャンセル</button>
                 </div>
             `);
-            byId('search-user-btn').addEventListener('click', handleFriendSearch);
-        }
-
-        function handleFriendSearch() {
-            // 変更点: emailからusernameでの検索に変更
-            const username = byId('search-user-input').value.trim();
-            if (username === '') return;
-
-            database.ref('users').orderByChild('username').equalTo(username).once('value', snapshot => {
-                const resultsDiv = byId('search-results');
-                if (!snapshot.exists()) {
-                    resultsDiv.innerHTML = '<p>ユーザーが見つかりません。</p>';
-                    return;
-                }
-                snapshot.forEach(child => {
-                    const uid = child.key;
-                    const data = child.val();
-                    if (uid === currentUser.uid) {
-                        resultsDiv.innerHTML = '<p>自分自身は追加できません。</p>';
-                        return;
-                    }
-                    resultsDiv.innerHTML = `
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <span>${data.username}</span>
-                            <button class="save-btn" onclick="sendFriendRequest('${uid}')">申請</button>
-                        </div>`;
-                });
+            byId('profile-avatar-preview').addEventListener('click', () => byId('avatar-upload-input').click());
+            byId('avatar-upload-input').addEventListener('change', e => {
+                const file = e.target.files[0];
+                if (file) byId('profile-avatar-preview').src = URL.createObjectURL(file);
             });
+            byId('save-profile-btn').addEventListener('click', handleProfileSave);
         }
-        
-        // Friend request/accept/reject/load logic is unchanged
-        function sendFriendRequest(targetUid) {
-            const updates = {};
-            updates[`/friendRequests/${targetUid}/${currentUser.uid}`] = { fromName: currentUser.displayName, fromAvatar: currentUser.photoURL };
-            database.ref().update(updates).then(() => {
-                alert('フレンド申請を送信しました。');
-                byId('search-results').innerHTML = '';
-            });
-        }
-        function loadFriendRequests() { /* ... unchanged ... */ }
-        function acceptFriendRequest(senderUid) { /* ... unchanged ... */ }
-        function rejectFriendRequest(senderUid) { /* ... unchanged ... */ }
-        function loadFriends() { /* ... unchanged ... */ }
-        
-        // Background modal and save logic is unchanged
-        function showBackgroundModal() { /* ... unchanged ... */ }
-        async function handleBackgroundSave() { /* ... unchanged ... */ }
 
-        // --- Chat Logic (unchanged) ---
-        function startChat(friendUid, friendName) { /* ... unchanged ... */ }
-        function loadChatMessages() { /* ... unchanged ... */ }
-        function displayMessage(msg) { /* ... unchanged ... */ }
-        function createMessageData(data) { /* ... unchanged ... */ }
-        function sendMessage() { /* ... unchanged ... */ }
-        async function handleFileUpload(e) { /* ... unchanged ... */ }
-        function toggleStampPanel() { /* ... unchanged ... */ }
-        function sendStamp(e) { /* ... unchanged ... */ }
+        // ==================================================================
+        // ★★★★★ ここがCORS不要の新しいアイコン保存処理です ★★★★★
+        // ==================================================================
+        function handleProfileSave() {
+            const newUsername = byId('profile-username-input').value;
+            const file = byId('avatar-upload-input').files[0];
+
+            // 名前だけ変更する場合
+            if (!file) {
+                showLoader();
+                database.ref('users/' + currentUser.uid).update({ username: newUsername })
+                    .then(() => {
+                        alert('表示名を更新しました。');
+                        closeModal('profile-modal');
+                    })
+                    .catch(err => alert('エラー: ' + err.message))
+                    .finally(hideLoader);
+                return;
+            }
+
+            // --- ファイルサイズをチェック (1MB = 1048576 bytes) ---
+            if (file.size > 1048576) {
+                alert('ファイルサイズが大きすぎます。1MB以下の画像を選択してください。');
+                return;
+            }
+
+            showLoader();
+
+            // --- FileReaderを使って画像をBase64テキストに変換 ---
+            const reader = new FileReader();
+            reader.readAsDataURL(file); // これで読み込みを開始
+
+            // 読み込みが完了したら実行される
+            reader.onload = () => {
+                const base64Image = reader.result; // 変換されたテキストデータ
+                const updates = {
+                    username: newUsername,
+                    photoURL: base64Image // テキストデータをDBに保存
+                };
+
+                database.ref('users/' + currentUser.uid).update(updates)
+                    .then(() => {
+                        alert('プロフィールを更新しました。');
+                        closeModal('profile-modal');
+                    })
+                    .catch(err => alert('エラー: ' + err.message))
+                    .finally(hideLoader);
+            };
+            
+            // 読み込みに失敗した場合
+            reader.onerror = (error) => {
+                alert('ファイルの読み込みに失敗しました: ' + error);
+                hideLoader();
+            };
+        }
         
-        // Dummy functions to avoid breaking the code, as their implementation is long and unchanged
-        handleSignup = () => {
-            const email = byId('signup-email').value, password = byId('signup-password').value, username = byId('signup-username').value;
-            if (!username) return alert('表示名を入力してください。');
+        // --- その他の機能 (Friend, Background, Chat) は変更ありません ---
+        // handleSignup, handleLogin...
+        // showAddFriendModal, handleFriendSearch...
+        // showBackgroundModal, handleBackgroundSave...
+        // startChat, displayMessage, handleFileUpload...
+
+        // --- 警告：チャットのファイルアップロードについて ---
+        async function handleFileUpload(e) {
+            // この関数はFirebase Storageを使用するため、CORS設定が必要です。
+            // アイコン変更とは異なり、大きな動画ファイルなどをBase64でDBに保存するのは現実的ではありません。
+            // チャットでのファイル共有機能を使いたい場合は、最終的にCORSの設定が必要になります。
+            const file = e.target.files[0];
+            if (!file || !currentChatId) return;
+            
+            alert("チャットへのファイルアップロード機能は、現在CORS設定が必要です。");
+            // 以下、元のアップロード処理（CORSエラーが出る可能性があります）
             showLoader();
-            auth.createUserWithEmailAndPassword(email, password)
-                .then(cred => database.ref('users/' + cred.user.uid).set({ username, email, photoURL: 'https://firebasestorage.googleapis.com/v0/b/nemousu-636eb.appspot.com/o/default_avatar.png?alt=media&token=e110756e-82b5-4166-9323-e578a1f879e9' }))
-                .catch(err => alert(err.message)).finally(hideLoader);
-        };
-        handleLogin = () => {
-            const email = byId('login-email').value, password = byId('login-password').value;
-            showLoader();
-            auth.signInWithEmailAndPassword(email, password).catch(err => alert(err.message)).finally(hideLoader);
-        };
-        showProfileModal = () => {
-            openModal('profile-modal', `<h2>プロフィール編集</h2><img id="profile-avatar-preview" src="${currentUser.photoURL}" style="width:100px;height:100px;border-radius:50%;cursor:pointer;object-fit:cover;display:block;margin:0 auto 15px;"><input type="file" id="avatar-upload-input" style="display:none;" accept="image/*"><label>表示名</label><input type="text" id="profile-username-input" value="${currentUser.displayName}"><div class="modal-controls"><button id="save-profile-btn" class="save-btn">保存</button><button class="cancel-btn" onclick="closeModal('profile-modal')">キャンセル</button></div>`);
-            byId('profile-avatar-preview').onclick=()=>byId('avatar-upload-input').click();
-            byId('avatar-upload-input').onchange=e=>{if(e.target.files[0])byId('profile-avatar-preview').src=URL.createObjectURL(e.target.files[0])};
-            byId('save-profile-btn').onclick=handleProfileSave;
-        };
-        handleProfileSave = async () => {
-            showLoader();
-            const newUsername = byId('profile-username-input').value, file = byId('avatar-upload-input').files[0];
-            let photoURL = currentUser.photoURL;
             try {
-                if(file){const snap=await storage.ref(`avatars/${currentUser.uid}/${Date.now()}_${file.name}`).put(file);photoURL=await snap.ref.getDownloadURL()}
-                await database.ref('users/'+currentUser.uid).update({username:newUsername,photoURL});
-                alert('プロフィールを更新しました。');closeModal('profile-modal');
-            } catch (err){alert(err.message)} finally {hideLoader()}
-        };
-        loadFriendRequests = () => {
-            database.ref(`friendRequests/${currentUser.uid}`).on('value',s=>{
-                const list=byId('friend-requests-list');list.innerHTML='';if(!s.exists())return;
-                s.forEach(c=>{const uid=c.key,data=c.val();list.innerHTML+=`<div class="request-item"><div class="request-item-info">${data.fromName}</div><div class="request-item-actions"><button onclick="acceptFriendRequest('${uid}')">✔️</button><button onclick="rejectFriendRequest('${uid}')">❌</button></div></div>`});
-            });
-        };
-        acceptFriendRequest = (senderUid) => { const u={};u[`/friends/${currentUser.uid}/${senderUid}`]=true;u[`/friends/${senderUid}/${currentUser.uid}`]=true;u[`/friendRequests/${currentUser.uid}/${senderUid}`]=null;database.ref().update(u); };
-        rejectFriendRequest = (senderUid) => { database.ref(`friendRequests/${currentUser.uid}/${senderUid}`).remove(); };
-        loadFriends = () => {
-            database.ref(`friends/${currentUser.uid}`).on('value', s=>{
-                const list=byId('friend-list-container');list.innerHTML='';if(!s.exists())return;
-                s.forEach(c=>{const uid=c.key;database.ref(`users/${uid}`).once('value',us=>{const data=us.val(),el=document.createElement('div');el.className='friend-item';el.dataset.uid=uid;el.innerHTML=`<img src="${data.photoURL}" class="avatar"><span>${data.username}</span>`;el.onclick=()=>startChat(uid,data.username);list.appendChild(el)})});
-            });
-        };
-        showBackgroundModal = () => { openModal('background-modal',`<h2>背景を変更</h2><p>新しい背景画像をアップロード</p><input type="file" id="bg-upload-input" accept="image/*"><div class="modal-controls"><button id="save-bg-btn" class="save-btn">保存</button><button class="cancel-btn" onclick="closeModal('background-modal')">キャンセル</button></div>`); byId('save-bg-btn').onclick=handleBackgroundSave; };
-        handleBackgroundSave = async () => { const file=byId('bg-upload-input').files[0];if(!file)return; showLoader(); try{const snap=await storage.ref(`backgrounds/${currentUser.uid}/${file.name}`).put(file),url=await snap.ref.getDownloadURL();await database.ref(`users/${currentUser.uid}`).update({backgroundURL:url});alert('背景を更新しました。');closeModal('background-modal')}catch(err){alert(err.message)}finally{hideLoader()} };
-        startChat = (friendUid, friendName) => { byId('sidebar').classList.remove('open');byId('chat-placeholder').style.display='none';byId('chat-area').style.display='flex';byId('chat-header-name').textContent=friendName;if(messageListener&&currentChatId)database.ref(`chats/${currentChatId}/messages`).off('child_added',messageListener);currentChatId=currentUser.uid<friendUid?`${currentUser.uid}_${friendUid}`:`${friendUid}_${currentUser.uid}`;document.querySelectorAll('.friend-item').forEach(e=>e.classList.remove('active'));document.querySelector(`.friend-item[data-uid="${friendUid}"]`).classList.add('active');loadChatMessages() };
-        loadChatMessages = () => { const div=byId('chat-messages');div.innerHTML='';const ref=database.ref(`chats/${currentChatId}/messages`).orderByChild('timestamp').limitToLast(100);messageListener=ref.on('child_added',s=>displayMessage(s.val())); };
-        displayMessage = (msg) => { const div=byId('chat-messages'),w=document.createElement('div');w.className='message-wrapper'+(msg.senderId===currentUser.uid?' own':'');let h='';if(msg.type==='text'){const r=/(https?:\/\/[^\s]+)/g;h=msg.text.replace(r,'<a href="$&" target="_blank">$&</a>')}else if(msg.type==='image'){h=`<img src="${msg.fileURL}" class="embedded">`}else if(msg.type==='video'){h=`<video src="${msg.fileURL}" class="embedded" controls></video>`}else if(msg.type==='stamp'){h=`<img src="${msg.stampURL}" class="stamp">`}w.innerHTML=`<div class="message-bubble">${msg.senderId!==currentUser.uid?`<img src="${msg.senderAvatar}" class="avatar">`:''}<div class="message-content">${msg.senderId!==currentUser.uid?`<div class="username">${msg.senderName}</div>`:''}<div>${h}</div><div class="timestamp">${new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div></div></div>`;div.insertBefore(w,div.firstChild); };
-        createMessageData = (data) => ({senderId:currentUser.uid,senderName:currentUser.displayName,senderAvatar:currentUser.photoURL,timestamp:firebase.database.ServerValue.TIMESTAMP,...data});
-        sendMessage = () => { const i=byId('chat-input'),t=i.value.trim();if(t===''||!currentChatId)return;const d=createMessageData({type:'text',text:t});database.ref(`chats/${currentChatId}/messages`).push(d);i.value='' };
-        handleFileUpload = async (e) => { const f=e.target.files[0];if(!f||!currentChatId)return;showLoader();try{const t=f.type.split('/')[0],p=`chat_files/${currentChatId}/${Date.now()}_${f.name}`,s=await storage.ref(p).put(f),u=await s.ref.getDownloadURL(),d=createMessageData({type:t==='image'||t==='video'?t:'file',fileURL:u,text:f.name});database.ref(`chats/${currentChatId}/messages`).push(d)}catch(err){alert(err.message)}finally{hideLoader()} };
-        toggleStampPanel = () => { const p=byId('stamp-panel');if(p.style.display==='grid'){p.style.display='none'}else{p.innerHTML=stamps.map(u=>`<img src="${u}" data-url="${u}">`).join('');p.querySelectorAll('img').forEach(i=>i.onclick=sendStamp);p.style.display='grid'} };
-        sendStamp = (e) => { const u=e.target.dataset.url;if(!u||!currentChatId)return;const d=createMessageData({type:'stamp',stampURL:u});database.ref(`chats/${currentChatId}/messages`).push(d);toggleStampPanel(); };
+                const fileType = file.type.split('/')[0];
+                const filePath = `chat_files/${currentChatId}/${Date.now()}_${file.name}`;
+                const snapshot = await storage.ref(filePath).put(file);
+                const fileURL = await snapshot.ref.getDownloadURL();
+                
+                const messageData = createMessageData({
+                    type: fileType === 'image' || fileType === 'video' ? fileType : 'file',
+                    fileURL: fileURL,
+                    text: file.name
+                });
+                database.ref(`chats/${currentChatId}/messages`).push(messageData);
+            } catch(error) {
+                alert('アップロード失敗: CORSポリシーによりブロックされた可能性があります。\n' + error.message);
+            } finally {
+                hideLoader();
+                byId('file-upload-input').value = ''; // 入力をリセット
+            }
+        }
+        
+        // --- 以下、変更のない関数群（ダミー実装でコードを短縮）---
+        const handleSignup = () => {const e=byId("signup-email").value,t=byId("signup-password").value,n=byId("signup-username").value;n?(showLoader(),auth.createUserWithEmailAndPassword(e,t).then(e=>database.ref("users/"+e.user.uid).set({username:n,email:e.user.email,photoURL:"https://firebasestorage.googleapis.com/v0/b/nemousu-636eb.appspot.com/o/default_avatar.png?alt=media&token=e110756e-82b5-4166-9323-e578a1f879e9"})).catch(e=>alert(e.message)).finally(hideLoader)):alert("表示名を入力してください。")};
+        const handleLogin = () => {const e=byId("login-email").value,t=byId("login-password").value;showLoader(),auth.signInWithEmailAndPassword(e,t).catch(e=>alert(e.message)).finally(hideLoader)};
+        const showAddFriendModal=()=>{openModal("add-friend-modal",`<h2>フレンドを追加</h2><input type="text" id="search-user-input" placeholder="表示名で検索"><button id="search-user-btn" class="save-btn" style="width:100%">検索</button><div id="search-results" style="margin-top: 15px;"></div><div class="modal-controls"><button class="cancel-btn" onclick="closeModal('add-friend-modal')">閉じる</button></div>`),byId("search-user-btn").addEventListener("click",handleFriendSearch)};
+        const handleFriendSearch=()=>{const e=byId("search-user-input").value.trim();""!==e&&database.ref("users").orderByChild("username").equalTo(e).once("value",e=>{const t=byId("search-results");e.exists()?e.forEach(e=>{const n=e.key,o=e.val();n===currentUser.uid?t.innerHTML="<p>自分自身は追加できません。</p>":t.innerHTML=`\n                        <div style="display: flex; align-items: center; justify-content: space-between;">\n                            <span>${o.username}</span>\n                            <button class="save-btn" onclick="sendFriendRequest('${n}')">申請</button>\n                        </div>`}):t.innerHTML="<p>ユーザーが見つかりません。</p>"})};
+        const sendFriendRequest=e=>{const t={};t[`/friendRequests/${e}/${currentUser.uid}`]={fromName:currentUser.displayName,fromAvatar:currentUser.photoURL},database.ref().update(t).then(()=>{alert("フレンド申請を送信しました。"),byId("search-results").innerHTML=""})};
+        const loadFriendRequests=()=>{database.ref(`friendRequests/${currentUser.uid}`).on("value",e=>{const t=byId("friend-requests-list");if(t.innerHTML="",!e.exists())return;e.forEach(e=>{const n=e.key,o=e.val();t.innerHTML+=`\n                          <div class="request-item">\n                            <div class="request-item-info">${o.fromName}</div>\n                            <div class="request-item-actions">\n                              <button onclick="acceptFriendRequest('${n}')">✔️</button>\n                              <button onclick="rejectFriendRequest('${n}')">❌</button>\n                            </div>\n                          </div>`})})};
+        const acceptFriendRequest=e=>{const t={};t[`/friends/${currentUser.uid}/${e}`]=!0,t[`/friends/${e}/${currentUser.uid}`]=!0,t[`/friendRequests/${currentUser.uid}/${e}`]=null,database.ref().update(t)};
+        const rejectFriendRequest=e=>{database.ref(`friendRequests/${currentUser.uid}/${e}`).remove()};
+        const loadFriends=()=>{database.ref(`friends/${currentUser.uid}`).on("value",e=>{const t=byId("friend-list-container");if(t.innerHTML="",!e.exists())return;e.forEach(e=>{const n=e.key;database.ref(`users/${n}`).once("value",e=>{const o=e.val(),a=document.createElement("div");a.className="friend-item",a.dataset.uid=n,a.innerHTML=`<img src="${o.photoURL}" alt="Avatar" class="avatar"><span>${o.username}</span>`,a.onclick=()=>startChat(n,o.username),t.appendChild(a)})})})};
+        const showBackgroundModal=()=>{openModal("background-modal",`<h2>背景を変更</h2><p>新しい背景画像をアップロード</p><input type="file" id="bg-upload-input" accept="image/*"><div class="modal-controls"><button id="save-bg-btn" class="save-btn">保存</button><button class="cancel-btn" onclick="closeModal('background-modal')">キャンセル</button></div>`),byId("save-bg-btn").onclick=handleBackgroundSave};
+        const handleBackgroundSave=async()=>{const e=byId("bg-upload-input").files[0];if(e){showLoader();try{const t=await storage.ref(`backgrounds/${currentUser.uid}/${e.name}`).put(e),n=await t.ref.getDownloadURL();await database.ref(`users/${currentUser.uid}`).update({backgroundURL:n}),alert("背景を更新しました。"),closeModal("background-modal")}catch(e){alert("背景の更新に失敗: "+e.message)}finally{hideLoader()}}};
+        const startChat=(e,t)=>{byId("sidebar").classList.remove("open"),byId("chat-placeholder").style.display="none",byId("chat-area").style.display="flex",byId("chat-header-name").textContent=t,messageListener&&currentChatId&&database.ref(`chats/${currentChatId}/messages`).off("child_added",messageListener),currentChatId=currentUser.uid<e?`${currentUser.uid}_${e}`:`${e}_${currentUser.uid}`,document.querySelectorAll(".friend-item").forEach(e=>e.classList.remove("active")),document.querySelector(`.friend-item[data-uid="${e}"]`).classList.add("active"),loadChatMessages()};
+        const loadChatMessages=()=>{const e=byId("chat-messages");e.innerHTML="";const t=database.ref(`chats/${currentChatId}/messages`).orderByChild("timestamp").limitToLast(100);messageListener=t.on("child_added",e=>{displayMessage(e.val())})};
+        const displayMessage=e=>{const t=byId("chat-messages"),n=document.createElement("div");n.className="message-wrapper"+(e.senderId===currentUser.uid?" own":"");let o="";"text"===e.type?o=e.text.replace(/(https?:\/\/[^\s]+)/g,'<a href="$&" target="_blank">$&</a>'):"image"===e.type?o=`<img src="${e.fileURL}" class="embedded" alt="image">`:"video"===e.type?o=`<video src="${e.fileURL}" class="embedded" controls></video>`:"stamp"===e.type&&(o=`<img src="${e.stampURL}" class="stamp" alt="stamp">`),n.innerHTML=`\n                <div class="message-bubble">\n                    ${e.senderId!==currentUser.uid?`<img src="${e.senderAvatar}" alt="Avatar" class="avatar">`:""}\n                    <div class="message-content">\n                        ${e.senderId!==currentUser.uid?`<div class="username">${e.senderName}</div>`:""}\n                        <div>${o}</div>\n                        <div class="timestamp">${new Date(e.timestamp).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})}</div>\n                    </div>\n                </div>\n            `,t.insertBefore(n,t.firstChild)};
+        const createMessageData=e=>({senderId:currentUser.uid,senderName:currentUser.displayName,senderAvatar:currentUser.photoURL,timestamp:firebase.database.ServerValue.TIMESTAMP,...e});
+        const sendMessage=()=>{const e=byId("chat-input"),t=e.value.trim();if(""!==t&&currentChatId){const n=createMessageData({type:"text",text:t});database.ref(`chats/${currentChatId}/messages`).push(n),e.value=""}};
+        const toggleStampPanel=()=>{const e=byId("stamp-panel");"grid"===e.style.display?(e.style.display="none"):(e.innerHTML=stamps.map(e=>`<img src="${e}" data-url="${e}">`).join(""),e.querySelectorAll("img").forEach(e=>e.addEventListener("click",sendStamp)),e.style.display="grid")};
+        const sendStamp=e=>{const t=e.target.dataset.url;if(t&&currentChatId){const n=createMessageData({type:"stamp",stampURL:t});database.ref(`chats/${currentChatId}/messages`).push(n),toggleStampPanel()}};
+        const stamps = ['https://firebasestorage.googleapis.com/v0/b/nemousu-636eb.appspot.com/o/stamps%2Fstamp01.png?alt=media&token=e9e62b08-62d2-4b71-9b16-563d763ed7ac','https://firebasestorage.googleapis.com/v0/b/nemousu-636eb.appspot.com/o/stamps%2Fstamp02.png?alt=media&token=42d10667-d864-4e78-9a49-2e11e3b56417'];
 
     </script>
 </body>
