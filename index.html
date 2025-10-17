@@ -75,21 +75,21 @@
         const auth = firebase.auth();
         const database = firebase.database();
         
-        // --- Anti-Trolling Configuration ---
+        // --- App Configuration ---
         const POST_COOLDOWN_SECONDS = 15;
-        const BANNED_WORDS = ["バカ", "アホ", "死ね", "殺す", "sex", "fuck", "anal"];
+        const BANNED_WORDS = ["バカ", "アホ", "死ね", "殺す"];
 
-        // --- Global State & Utils ---
+        // --- Global State ---
         let currentUser = null;
+
+        // --- Utility Functions ---
         const byId = id => document.getElementById(id);
         const showLoader = () => byId('loader-modal').style.display = 'flex';
         const hideLoader = () => byId('loader-modal').style.display = 'none';
         const openModal = (id) => byId(id).style.display = 'flex';
         const closeModal = (id) => byId(id).style.display = 'none';
 
-        // ==========================================================
-        // ★★★★★ 全ての関数を 'function' 形式で先に定義 ★★★★★
-        // ==========================================================
+        // --- All Function Definitions ---
         
         function formatTimestamp(ts) {
             const now = new Date(), date = new Date(ts), diff = now - date;
@@ -187,7 +187,7 @@
                     if (currentUser && currentUser.isAdmin) {
                         const deleteBtn = postEl.querySelector('.delete-btn');
                         if (deleteBtn) deleteBtn.addEventListener('click', (e) => {
-                            e.stopPropagation(); // 詳細画面が開かないようにする
+                            e.stopPropagation();
                             deletePost(post.id)
                         });
                     }
@@ -199,7 +199,7 @@
         function handlePostSubmit() {
             const postButton = byId('post-button');
             const now = Date.now();
-            const timeSinceLastPost = (now - currentUser.lastPostTimestamp) / 1000;
+            const timeSinceLastPost = (now - (currentUser.lastPostTimestamp || 0)) / 1000;
             if (timeSinceLastPost < POST_COOLDOWN_SECONDS) {
                 alert(`連投はできません。あと ${Math.ceil(POST_COOLDOWN_SECONDS - timeSinceLastPost)} 秒お待ちください。`);
                 return;
@@ -208,7 +208,7 @@
             let text = byId('post-input').value.trim();
             if (text === '') return;
 
-            postButton.disabled = true; // ボタンを無効化
+            postButton.disabled = true;
             BANNED_WORDS.forEach(word => { text = text.replace(new RegExp(word, 'gi'), '***'); });
             
             const postData = { uid: currentUser.uid, username: currentUser.displayName, photoURL: currentUser.photoURL, text: text, timestamp: firebase.database.ServerValue.TIMESTAMP };
@@ -219,7 +219,7 @@
             }).catch(err => {
                 alert("投稿エラー: " + err.message);
             }).finally(() => {
-                postButton.disabled = false; // ボタンを再度有効化
+                postButton.disabled = false;
             });
         }
 
@@ -295,24 +295,33 @@
             byId('user-avatar-header').addEventListener('click', showProfileModal);
             byId('post-button').addEventListener('click', handlePostSubmit);
         }
+        
+        function setupInitialHTML() {
+            byId('auth-container').innerHTML = `<div class="auth-card"><div id="login-form"><h1>おかえりなさい</h1><input type="email" id="login-email" placeholder="メールアドレス" required><input type="password" id="login-password" placeholder="パスワード" required><button id="login-button">ログイン</button><p class="toggle-form">アカウントをお持ちでないですか？ <a id="show-signup">サインアップ</a></p></div><div id="signup-form" style="display: none;"><h1>ようこそ</h1><input type="text" id="signup-username" placeholder="表示名" required><input type="email" id="signup-email" placeholder="メールアドレス" required><input type="password" id="signup-password" placeholder="パスワード" required><button id="signup-button">アカウント作成</button><p class="toggle-form">既にアカウントをお持ちですか？ <a id="show-login">ログイン</a></p></div></div>`;
+            byId('app-container').innerHTML = `<div class="main-layout"><div class="content-column"><header class="app-header"><h2>ホーム</h2><img id="user-avatar-header" class="avatar" alt="My Avatar"></header><div class="post-form-container"><div class="post-form"><img id="user-avatar-form" class="avatar" alt="My Avatar"><div class="post-form-main"><textarea id="post-input" placeholder="いまどうしてる？"></textarea><button id="post-button">ポストする</button></div></div></div><div class="timeline-container" id="timeline-container"></div></div></div>`;
+            byId('post-detail-modal').innerHTML = `<div class="modal-content"><div class="modal-header"><h2>ポスト</h2><button class="close-btn" onclick="closeModal('post-detail-modal')">&times;</button></div><div class="modal-body" id="post-detail-body"></div></div>`;
+        }
 
-        // --- Initial Script Execution ---
-        setupInitialHTML();
-        setupGlobalEventListeners();
 
-        auth.onAuthStateChanged(user => {
-            const authContainer = byId('auth-container');
-            const appContainer = byId('app-container');
-            if (user) {
-                currentUser = user;
-                authContainer.style.display = 'none';
-                appContainer.style.display = 'block';
-                setupAppForUser(user);
-            } else {
-                currentUser = null;
-                authContainer.style.display = 'flex';
-                appContainer.style.display = 'none';
-            }
+        // --- Main Execution ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setupInitialHTML();
+            setupGlobalEventListeners();
+
+            auth.onAuthStateChanged(user => {
+                const authContainer = byId('auth-container');
+                const appContainer = byId('app-container');
+                if (user) {
+                    currentUser = user;
+                    authContainer.style.display = 'none';
+                    appContainer.style.display = 'block';
+                    setupAppForUser(user);
+                } else {
+                    currentUser = null;
+                    authContainer.style.display = 'flex';
+                    appContainer.style.display = 'none';
+                }
+            });
         });
 
     </script>
