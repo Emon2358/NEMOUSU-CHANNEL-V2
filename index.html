@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ねもうすちゃんねる SNS v5</title>
+    <title>ねもうすちゃんねる SNS v6</title>
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jdenticon@3.1.1/dist/jdenticon.min.js"
+        integrity="sha384-l0/0sn63N3mskDgRYJZA6Mogihu0VY3CusdLMiwpJ9LFPklOARUcOiWEIGGmFELx"
+        crossorigin="anonymous"></script>
     <style>
         :root {
             --bg-color: #15202B;
@@ -19,304 +22,53 @@
             --font-family: "Helvetica Neue", Arial, sans-serif;
             --danger-color: #E0245E;
         }
-
-        body {
-            margin: 0;
-            font-family: var(--font-family);
-            background-color: var(--bg-color);
-            color: var(--primary-text-color);
-            overflow: hidden;
-        }
-
-        #auth-container {
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .auth-card {
-            background-color: var(--surface-color);
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-            width: 90%;
-            max-width: 400px;
-            box-sizing: border-box;
-            text-align: center;
-        }
-
-        .auth-card h1 {
-            margin-top: 0;
-            margin-bottom: 30px;
-            font-size: 28px;
-        }
-
-        .auth-card input {
-            width: 100%;
-            padding: 14px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border-color);
-            background-color: var(--bg-color);
-            color: var(--primary-text-color);
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-
-        .auth-card button {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            background-color: var(--accent-color);
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: background-color 0.2s;
-        }
-
-        .auth-card button:hover {
-            background-color: var(--accent-hover-color);
-        }
-
-        .toggle-form {
-            margin-top: 25px;
-            font-size: 14px;
-            color: var(--secondary-text-color);
-        }
-
-        .toggle-form a {
-            color: var(--accent-color);
-            text-decoration: none;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        #app-container {
-            display: none;
-            width: 100vw;
-            height: 100vh;
-        }
-
-        .main-layout {
-            display: flex;
-            justify-content: center;
-            height: 100%;
-        }
-
-        .content-column {
-            width: 100%;
-            max-width: 600px;
-            border-left: 1px solid var(--border-color);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .app-header {
-            display: flex;
-            align-items: center;
-            padding: 0 16px;
-            height: 53px;
-            border-bottom: 1px solid var(--border-color);
-            backdrop-filter: blur(5px);
-            background-color: rgba(21, 32, 43, 0.75);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .app-header h2 {
-            font-size: 20px;
-            margin: 0;
-            flex-grow: 1;
-        }
-
-        .app-header .avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            cursor: pointer;
-            object-fit: cover;
-        }
-
-        .timeline-container {
-            flex-grow: 1;
-            overflow-y: auto;
-        }
-
-        .post-form-container {
-            padding: 16px;
-            border-bottom: 8px solid var(--border-color);
-        }
-
-        .post-form {
-            display: flex;
-        }
-
-        .post-form .avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            margin-right: 12px;
-        }
-
-        .post-form-main {
-            flex-grow: 1;
-        }
-
-        #post-input {
-            width: 100%;
-            background: none;
-            border: none;
-            color: var(--primary-text-color);
-            font-size: 20px;
-            resize: none;
-            min-height: 60px;
-            outline: none;
-            padding: 12px 0;
-        }
-
-        #post-button {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 9999px;
-            font-weight: bold;
-            cursor: pointer;
-            float: right;
-            margin-top: 8px;
-        }
-
-        #post-button:disabled {
-            background-color: var(--secondary-text-color);
-            cursor: not-allowed;
-        }
-
-        .post-item {
-            padding: 16px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            cursor: pointer;
-            position: relative;
-        }
-
-        .post-item:hover {
-            background-color: rgba(255, 255, 255, 0.03);
-        }
-
-        .post-item .avatar {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            margin-right: 12px;
-            object-fit: cover;
-            background-color: #333;
-            /* Fallback color */
-        }
-
-        .post-content .post-header {
-            display: flex;
-            align-items: center;
-        }
-
-        .post-header .username {
-            font-weight: bold;
-        }
-
-        .post-header .timestamp {
-            color: var(--secondary-text-color);
-            margin-left: 8px;
-            font-size: 14px;
-        }
-
-        .post-text {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            margin: 4px 0;
-        }
-
-        .delete-btn {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: none;
-            border: none;
-            color: var(--secondary-text-color);
-            cursor: pointer;
-            font-size: 18px;
-            padding: 5px;
-            border-radius: 50%;
-            display: none;
-        }
-
-        .post-item:hover .delete-btn {
-            display: block;
-        }
-
-        .delete-btn:hover {
-            background-color: rgba(224, 36, 94, 0.1);
-            color: var(--danger-color);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: var(--surface-color);
-            padding: 30px;
-            border-radius: 16px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-header h2 {
-            margin: 0;
-        }
-
-        .modal-header .close-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-        }
+        body { margin: 0; font-family: var(--font-family); background-color: var(--bg-color); color: var(--primary-text-color); overflow: hidden; }
+        #auth-container { width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .auth-card { background-color: var(--surface-color); padding: 40px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); width: 90%; max-width: 400px; box-sizing: border-box; text-align: center; }
+        .auth-card h1 { margin-top: 0; margin-bottom: 30px; font-size: 28px; }
+        .auth-card input { width: 100%; padding: 14px; margin-bottom: 20px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--primary-text-color); border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .auth-card button { width: 100%; padding: 14px; border: none; background-color: var(--accent-color); color: white; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: background-color 0.2s; }
+        .auth-card button:hover { background-color: var(--accent-hover-color); }
+        .toggle-form { margin-top: 25px; font-size: 14px; color: var(--secondary-text-color); }
+        .toggle-form a { color: var(--accent-color); text-decoration: none; cursor: pointer; font-weight: bold; }
+        #app-container { display: none; width: 100vw; height: 100vh; }
+        .main-layout { display: flex; justify-content: center; height: 100%; }
+        .content-column { width: 100%; max-width: 600px; border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .app-header { display: flex; align-items: center; padding: 0 16px; height: 53px; border-bottom: 1px solid var(--border-color); backdrop-filter: blur(5px); background-color: rgba(21, 32, 43, 0.75); position: sticky; top: 0; z-index: 10; }
+        .app-header h2 { font-size: 20px; margin: 0; flex-grow: 1; }
+        .avatar-container { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; overflow: hidden; }
+        .avatar { width: 100%; height: 100%; }
+        .timeline-container { flex-grow: 1; overflow-y: auto; }
+        .post-form-container { padding: 16px; border-bottom: 8px solid var(--border-color); }
+        .post-form { display: flex; }
+        .post-form .avatar-container { width: 48px; height: 48px; margin-right: 12px; flex-shrink: 0; }
+        .post-form-main { flex-grow: 1; }
+        #post-input { width: 100%; background: none; border: none; color: var(--primary-text-color); font-size: 20px; resize: none; min-height: 60px; outline: none; padding: 12px 0; }
+        #post-button { background-color: var(--accent-color); color: white; border: none; padding: 8px 16px; border-radius: 9999px; font-weight: bold; cursor: pointer; float: right; margin-top: 8px; }
+        #post-button:disabled { background-color: var(--secondary-text-color); cursor: not-allowed; }
+        .post-item { padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; cursor: pointer; position: relative; }
+        .post-item:hover { background-color: rgba(255,255,255,0.03); }
+        .post-item .avatar-container { width: 48px; height: 48px; margin-right: 12px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
+        .post-content .post-header { display: flex; align-items: center; }
+        .post-header .username { font-weight: bold; }
+        .post-header .timestamp { color: var(--secondary-text-color); margin-left: 8px; font-size: 14px; }
+        .post-text { white-space: pre-wrap; word-wrap: break-word; margin: 4px 0; }
+        .delete-btn { position: absolute; top: 8px; right: 8px; background: none; border: none; color: var(--secondary-text-color); cursor: pointer; font-size: 18px; padding: 5px; border-radius: 50%; display: none; }
+        .post-item:hover .delete-btn { display: block; }
+        .delete-btn:hover { background-color: rgba(224, 36, 94, 0.1); color: var(--danger-color); }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
+        .modal-content { background-color: var(--surface-color); padding: 30px; border-radius: 16px; width: 90%; max-width: 600px; max-height: 80vh; display: flex; flex-direction: column; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h2 { margin: 0; }
+        .modal-header .close-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
     </style>
 </head>
 <body>
     <div id="auth-container"></div>
     <div id="app-container"></div>
     <div id="post-detail-modal" class="modal"></div>
-    <div id="profile-modal" class="modal">
-        <div class="modal-content"></div>
-    </div>
-    <div id="loader-modal" class="modal">
-        <div class="loader"></div>
-    </div>
+    <div id="profile-modal" class="modal"><div class="modal-content"></div></div>
+    <div id="loader-modal" class="modal"><div class="loader"></div></div>
 
     <script>
         // --- Firebase Configuration ---
@@ -335,7 +87,7 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
-
+        
         // --- App Configuration ---
         const POST_COOLDOWN_SECONDS = 15;
         const BANNED_WORDS = ["バカ", "アホ", "死ね", "殺す"];
@@ -351,11 +103,9 @@
         const closeModal = (id) => byId(id).style.display = 'none';
 
         // --- All Function Definitions ---
-
+        
         function formatTimestamp(ts) {
-            const now = new Date(),
-                date = new Date(ts),
-                diff = now - date;
+            const now = new Date(), date = new Date(ts), diff = now - date;
             const diffSec = Math.floor(diff / 1000);
             if (diffSec < 60) return `${diffSec}秒`;
             const diffMin = Math.floor(diffSec / 60);
@@ -370,23 +120,21 @@
             let text = replyInput.value.trim();
             if (text === '') return;
 
-            BANNED_WORDS.forEach(word => {
-                text = text.replace(new RegExp(word, 'gi'), '***');
-            });
-
+            BANNED_WORDS.forEach(word => { text = text.replace(new RegExp(word, 'gi'), '***'); });
+            
             const replyData = {
                 uid: currentUser.uid,
                 username: currentUser.displayName,
-                photoURL: currentUser.photoURL,
+                photoURL: currentUser.photoURL, // This is now the Jdenticon hash
                 text: text,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             };
-
+            
             database.ref(`replies/${postId}`).push(replyData).then(() => {
                 replyInput.value = "";
             });
         }
-
+        
         function loadReplies(postId) {
             const repliesRef = database.ref(`replies/${postId}`).orderByChild("timestamp");
             repliesRef.on("value", snapshot => {
@@ -398,13 +146,13 @@
                     const replyEl = document.createElement("div");
                     replyEl.className = "post-item";
                     replyEl.style.cursor = "default";
-                    replyEl.innerHTML =
-                        `<img src="${reply.photoURL || ''}" class="avatar"><div class="post-content"><div class="post-header"><span class="username">${reply.username}</span></div><div class="post-text">${reply.text.replace(/</g, "&lt;")}</div></div>`;
+                    replyEl.innerHTML = `<div class="avatar-container"><svg class="avatar" data-jdenticon-value="${reply.photoURL}"></svg></div><div class="post-content"><div class="post-header"><span class="username">${reply.username}</span></div><div class="post-text">${reply.text.replace(/</g, "&lt;")}</div></div>`;
                     container.appendChild(replyEl);
                 });
+                jdenticon();
             });
         }
-
+        
         function showPostDetail(postId) {
             const body = byId("post-detail-body");
             body.innerHTML = "読み込み中...";
@@ -417,13 +165,13 @@
                     alert("この投稿は削除されたようです。");
                     return;
                 }
-                body.innerHTML =
-                    `<div class="post-item" style="cursor:default;"><img src="${post.photoURL || ''}" class="avatar"><div class="post-content"><div class="post-header"><span class="username">${post.username}</span></div><div class="post-text" style="font-size: 1.2em;">${post.text.replace(/</g, "&lt;")}</div><div class="timestamp">${new Date(post.timestamp).toLocaleString()}</div></div></div><hr style="border-color: var(--border-color);"><div class="post-form-container"><textarea id="reply-input" placeholder="返信をポスト" style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; min-height: 40px; width: 100%; box-sizing: border-box;"></textarea><button id="reply-button" style="background-color: var(--accent-color); color: white; border: none; padding: 6px 12px; border-radius: 9999px; font-weight: bold; cursor: pointer; float: right; margin-top: 8px;">返信する</button></div><div id="replies-container"></div>`;
+                body.innerHTML = `<div class="post-item" style="cursor:default;"><div class="avatar-container"><svg class="avatar" data-jdenticon-value="${post.photoURL}"></svg></div><div class="post-content"><div class="post-header"><span class="username">${post.username}</span></div><div class="post-text" style="font-size: 1.2em;">${post.text.replace(/</g, "&lt;")}</div><div class="timestamp">${new Date(post.timestamp).toLocaleString()}</div></div></div><hr style="border-color: var(--border-color);"><div class="post-form-container"><textarea id="reply-input" placeholder="返信をポスト" style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; min-height: 40px; width: 100%; box-sizing: border-box;"></textarea><button id="reply-button" style="background-color: var(--accent-color); color: white; border: none; padding: 6px 12px; border-radius: 9999px; font-weight: bold; cursor: pointer; float: right; margin-top: 8px;">返信する</button></div><div id="replies-container"></div>`;
+                jdenticon();
                 byId("reply-button").addEventListener("click", () => handleReplySubmit(postId));
                 loadReplies(postId);
             });
         }
-
+        
         function deletePost(postId) {
             if (confirm('本当にこの投稿と関連する返信をすべて削除しますか？')) {
                 const updates = {};
@@ -439,26 +187,18 @@
                 const timeline = byId('timeline-container');
                 timeline.innerHTML = '';
                 const posts = [];
-                snapshot.forEach(child => {
-                    posts.push({
-                        id: child.key,
-                        ...child.val()
-                    });
-                });
-
+                snapshot.forEach(child => { posts.push({ id: child.key, ...child.val() }); });
+                
                 posts.reverse().forEach(post => {
                     const postEl = document.createElement('div');
                     postEl.className = 'post-item';
-                    const adminButtonHTML = currentUser && currentUser.isAdmin ?
-                        `<button class="delete-btn" title="投稿を削除">&times;</button>` : '';
-                    postEl.innerHTML =
-                        `<img src="${post.photoURL || ''}" class="avatar"><div class="post-content"><div class="post-header"><span class="username">${post.username}</span><span class="timestamp">${formatTimestamp(post.timestamp)}</span></div><div class="post-text">${post.text.replace(/</g, "&lt;")}</div></div>${adminButtonHTML}`;
-
-                    postEl.addEventListener('click', (e) => {
-                        if (!e.target.classList.contains('delete-btn')) showPostDetail(post
-                            .id);
+                    const adminButtonHTML = currentUser && currentUser.isAdmin ? `<button class="delete-btn" title="投稿を削除">&times;</button>` : '';
+                    postEl.innerHTML = `<div class="avatar-container"><svg class="avatar" data-jdenticon-value="${post.photoURL}"></svg></div><div class="post-content"><div class="post-header"><span class="username">${post.username}</span><span class="timestamp">${formatTimestamp(post.timestamp)}</span></div><div class="post-text">${post.text.replace(/</g, "&lt;")}</div></div>${adminButtonHTML}`;
+                    
+                    postEl.addEventListener('click', (e) => { 
+                        if (!e.target.classList.contains('delete-btn')) showPostDetail(post.id); 
                     });
-
+                    
                     if (currentUser && currentUser.isAdmin) {
                         const deleteBtn = postEl.querySelector('.delete-btn');
                         if (deleteBtn) deleteBtn.addEventListener('click', (e) => {
@@ -468,6 +208,7 @@
                     }
                     timeline.appendChild(postEl);
                 });
+                jdenticon(); // Render all icons at once
             });
         }
 
@@ -476,30 +217,20 @@
             const now = Date.now();
             const timeSinceLastPost = (now - (currentUser.lastPostTimestamp || 0)) / 1000;
             if (timeSinceLastPost < POST_COOLDOWN_SECONDS) {
-                alert(
-                    `連投はできません。あと ${Math.ceil(POST_COOLDOWN_SECONDS - timeSinceLastPost)} 秒お待ちください。`);
+                alert(`連投はできません。あと ${Math.ceil(POST_COOLDOWN_SECONDS - timeSinceLastPost)} 秒お待ちください。`);
                 return;
             }
-
+            
             let text = byId('post-input').value.trim();
             if (text === '') return;
 
             postButton.disabled = true;
-            BANNED_WORDS.forEach(word => {
-                text = text.replace(new RegExp(word, 'gi'), '***');
-            });
-
-            const postData = {
-                uid: currentUser.uid,
-                username: currentUser.displayName,
-                photoURL: currentUser.photoURL,
-                text: text,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            };
-
+            BANNED_WORDS.forEach(word => { text = text.replace(new RegExp(word, 'gi'), '***'); });
+            
+            const postData = { uid: currentUser.uid, username: currentUser.displayName, photoURL: currentUser.photoURL, text: text, timestamp: firebase.database.ServerValue.TIMESTAMP };
+            
             database.ref('posts').push(postData).then(() => {
-                database.ref(`users/${currentUser.uid}/lastPostTimestamp`).set(firebase.database
-                    .ServerValue.TIMESTAMP);
+                database.ref(`users/${currentUser.uid}/lastPostTimestamp`).set(firebase.database.ServerValue.TIMESTAMP);
                 byId('post-input').value = '';
             }).catch(err => {
                 alert("投稿エラー: " + err.message);
@@ -510,66 +241,42 @@
 
         function handleProfileSave() {
             const newUsername = byId("profile-username-input").value;
-            const file = byId("avatar-upload-input").files[0];
-            if (!file) {
-                showLoader();
-                database.ref('users/' + currentUser.uid).update({
-                    username: newUsername
-                }).then(() => closeModal('profile-modal')).catch(err => alert(err.message)).finally(
-                    hideLoader);
-                return;
-            }
-            if (file.size > 1048576) return alert("ファイルサイズが大きすぎます。1MB以下の画像を選択してください。");
-            showLoader();
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => {
-                database.ref('users/' + currentUser.uid).update({
-                    username: newUsername,
-                    photoURL: reader.result
-                }).then(() => closeModal('profile-modal')).catch(err => alert(err.message)).finally(
-                    hideLoader);
-            };
-            reader.onerror = err => {
-                alert("ファイル読込失敗: " + err);
-                hideLoader();
-            };
-        }
+            if (!newUsername) return alert("表示名は必須です。");
 
-        function showProfileModal() {
-            const content =
-                `<h2>プロフィール編集</h2><img id="profile-avatar-preview" src="${currentUser.photoURL}" style="width:100px;height:100px;border-radius:50%;cursor:pointer;object-fit:cover;display:block;margin:0 auto 15px;"><input type="file" id="avatar-upload-input" style="display:none;" accept="image/jpeg,image/png"><label>表示名</label><input type="text" id="profile-username-input" value="${currentUser.displayName}"><div class="modal-controls"><button id="save-profile-btn" class="save-btn">保存</button><button class="cancel-btn" onclick="closeModal('profile-modal')">キャンセル</button></div>`;
-            byId('profile-modal').querySelector('.modal-content').innerHTML = content;
-            openModal('profile-modal');
-            byId('profile-avatar-preview').onclick = () => byId('avatar-upload-input').click();
-            byId('avatar-upload-input').onchange = e => {
-                if (e.target.files[0]) byId('profile-avatar-preview').src = URL.createObjectURL(e.target
-                    .files[0])
-            };
-            byId('save-profile-btn').onclick = handleProfileSave;
-        }
-
-        function handleLogin() {
-            const email = byId("login-email").value,
-                password = byId("login-password").value;
-            if (!email || !password) return alert("メールアドレスとパスワードを入力してください。");
             showLoader();
-            auth.signInWithEmailAndPassword(email, password).catch(err => alert("ログインに失敗しました: " + err.message))
+            database.ref('users/' + currentUser.uid).update({ username: newUsername })
+                .then(() => closeModal('profile-modal'))
+                .catch(err => alert(err.message))
                 .finally(hideLoader);
         }
 
+        function showProfileModal() {
+            const content = `<h2>プロフィール編集</h2><div class="avatar-container" style="width: 100px; height: 100px; margin: 0 auto 15px;"><svg class="avatar" data-jdenticon-value="${currentUser.photoURL}"></svg></div><label>表示名</label><input type="text" id="profile-username-input" value="${currentUser.displayName}"><div class="modal-controls"><button id="save-profile-btn" class="save-btn">保存</button><button class="cancel-btn" onclick="closeModal('profile-modal')">キャンセル</button></div>`;
+            byId('profile-modal').querySelector('.modal-content').innerHTML = content;
+            openModal('profile-modal');
+            jdenticon(); // Render the icon in the modal
+            byId('save-profile-btn').onclick = handleProfileSave;
+        }
+        
+        function handleLogin() {
+            const email = byId("login-email").value, password = byId("login-password").value;
+            if (!email || !password) return alert("メールアドレスとパスワードを入力してください。");
+            showLoader();
+            auth.signInWithEmailAndPassword(email, password).catch(err => alert("ログインに失敗しました: " + err.message)).finally(hideLoader);
+        }
+
         function handleSignup() {
-            const email = byId("signup-email").value,
-                password = byId("signup-password").value,
-                username = byId("signup-username").value;
+            const email = byId("signup-email").value, password = byId("signup-password").value, username = byId("signup-username").value;
             if (!username) return alert("表示名を入力してください。");
             showLoader();
-            auth.createUserWithEmailAndPassword(email, password).then(cred => database.ref('users/' + cred.user.uid)
-                .set({
-                    username,
-                    email,
-                    photoURL: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iIzU1NSIvPjwvc3ZnPg=='
-                })).catch(err => alert(err.message)).finally(hideLoader);
+            auth.createUserWithEmailAndPassword(email, password).then(cred => {
+                // Use user's UID as the value for Jdenticon
+                database.ref('users/' + cred.user.uid).set({
+                    username: username,
+                    email: email,
+                    photoURL: cred.user.uid
+                });
+            }).catch(err => alert(err.message)).finally(hideLoader);
         }
 
         async function setupAppForUser(user) {
@@ -587,34 +294,29 @@
                 currentUser.displayName = userData.username;
                 currentUser.photoURL = userData.photoURL;
                 currentUser.lastPostTimestamp = userData.lastPostTimestamp || 0;
-                byId('user-avatar-header').src = userData.photoURL || '';
-                byId('user-avatar-form').src = userData.photoURL || '';
+                
+                // Render Jdenticon for header and form
+                byId('user-avatar-header-container').innerHTML = `<svg class="avatar" data-jdenticon-value="${userData.photoURL}"></svg>`;
+                byId('user-avatar-form-container').innerHTML = `<svg class="avatar" data-jdenticon-value="${userData.photoURL}"></svg>`;
+                jdenticon();
+
             });
             loadPosts();
         }
 
         function setupGlobalEventListeners() {
-            byId('show-signup').addEventListener('click', () => {
-                byId('login-form').style.display = 'none';
-                byId('signup-form').style.display = 'block';
-            });
-            byId('show-login').addEventListener('click', () => {
-                byId('login-form').style.display = 'block';
-                byId('signup-form').style.display = 'none';
-            });
+            byId('show-signup').addEventListener('click', () => { byId('login-form').style.display = 'none'; byId('signup-form').style.display = 'block'; });
+            byId('show-login').addEventListener('click', () => { byId('login-form').style.display = 'block'; byId('signup-form').style.display = 'none'; });
             byId('signup-button').addEventListener('click', handleSignup);
             byId('login-button').addEventListener('click', handleLogin);
-            byId('user-avatar-header').addEventListener('click', showProfileModal);
+            byId('user-avatar-header-container').addEventListener('click', showProfileModal);
             byId('post-button').addEventListener('click', handlePostSubmit);
         }
-
+        
         function setupInitialHTML() {
-            byId('auth-container').innerHTML =
-                `<div class="auth-card"><div id="login-form"><h1>おかえりなさい</h1><input type="email" id="login-email" placeholder="メールアドレス" required><input type="password" id="login-password" placeholder="パスワード" required><button id="login-button">ログイン</button><p class="toggle-form">アカウントをお持ちでないですか？ <a id="show-signup">サインアップ</a></p></div><div id="signup-form" style="display: none;"><h1>ようこそ</h1><input type="text" id="signup-username" placeholder="表示名" required><input type="email" id="signup-email" placeholder="メールアドレス" required><input type="password" id="signup-password" placeholder="パスワード" required><button id="signup-button">アカウント作成</button><p class="toggle-form">既にアカウントをお持ちですか？ <a id="show-login">ログイン</a></p></div></div>`;
-            byId('app-container').innerHTML =
-                `<div class="main-layout"><div class="content-column"><header class="app-header"><h2>ホーム</h2><img id="user-avatar-header" class="avatar" alt="My Avatar"></header><div class="post-form-container"><div class="post-form"><img id="user-avatar-form" class="avatar" alt="My Avatar"><div class="post-form-main"><textarea id="post-input" placeholder="いまどうしてる？"></textarea><button id="post-button">ポストする</button></div></div></div><div class="timeline-container" id="timeline-container"></div></div></div>`;
-            byId('post-detail-modal').innerHTML =
-                `<div class="modal-content"><div class="modal-header"><h2>ポスト</h2><button class="close-btn" onclick="closeModal('post-detail-modal')">&times;</button></div><div class="modal-body" id="post-detail-body"></div></div>`;
+            byId('auth-container').innerHTML = `<div class="auth-card"><div id="login-form"><h1>おかえりなさい</h1><input type="email" id="login-email" placeholder="メールアドレス" required><input type="password" id="login-password" placeholder="パスワード" required><button id="login-button">ログイン</button><p class="toggle-form">アカウントをお持ちでないですか？ <a id="show-signup">サインアップ</a></p></div><div id="signup-form" style="display: none;"><h1>ようこそ</h1><input type="text" id="signup-username" placeholder="表示名" required><input type="email" id="signup-email" placeholder="メールアドレス" required><input type="password" id="signup-password" placeholder="パスワード" required><button id="signup-button">アカウント作成</button><p class="toggle-form">既にアカウントをお持ちですか？ <a id="show-login">ログイン</a></p></div></div>`;
+            byId('app-container').innerHTML = `<div class="main-layout"><div class="content-column"><header class="app-header"><h2>ホーム</h2><div id="user-avatar-header-container" class="avatar-container"></div></header><div class="post-form-container"><div class="post-form"><div id="user-avatar-form-container" class="avatar-container"></div><div class="post-form-main"><textarea id="post-input" placeholder="いまどうしてる？"></textarea><button id="post-button">ポストする</button></div></div></div><div class="timeline-container" id="timeline-container"></div></div></div>`;
+            byId('post-detail-modal').innerHTML = `<div class="modal-content"><div class="modal-header"><h2>ポスト</h2><button class="close-btn" onclick="closeModal('post-detail-modal')">&times;</button></div><div class="modal-body" id="post-detail-body"></div></div>`;
         }
 
 
@@ -638,6 +340,7 @@
                 }
             });
         });
+
     </script>
 </body>
 </html>
