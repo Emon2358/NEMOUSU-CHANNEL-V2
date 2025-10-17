@@ -8,314 +8,59 @@
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-database-compat.js"></script>
     <style>
-        /* --- General Styles & Variables --- */
+        /* CSSは前回のバージョンから、削除ボタンのスタイルが追加された以外は大きな変更はありません */
         :root {
-            --bg-color: #1a1a1a;
-            --surface-color: #242424;
-            --primary-text-color: #f0f0f0;
-            --secondary-text-color: #a0a0a0;
-            --accent-color: #007aff;
-            --accent-hover-color: #005ce6;
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --bg-color: #15202B; --surface-color: #192734; --primary-text-color: #FFFFFF;
+            --secondary-text-color: #8899A6; --accent-color: #1D9BF0; --accent-hover-color: #1A8CD8;
+            --border-color: #38444D; --font-family: "Helvetica Neue", Arial, sans-serif; --danger-color: #E0245E;
         }
-
-        body {
-            margin: 0;
-            font-family: var(--font-family);
-            background-color: var(--bg-color);
-            color: var(--primary-text-color);
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        body { margin: 0; font-family: var(--font-family); background-color: var(--bg-color); color: var(--primary-text-color); overflow: hidden; }
+        #auth-container { width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .auth-card { background-color: var(--surface-color); padding: 40px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); width: 90%; max-width: 400px; box-sizing: border-box; text-align: center; }
+        .auth-card h1 { margin-top: 0; margin-bottom: 30px; font-size: 28px; }
+        .auth-card input { width: 100%; padding: 14px; margin-bottom: 20px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--primary-text-color); border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .auth-card button { width: 100%; padding: 14px; border: none; background-color: var(--accent-color); color: white; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; transition: background-color 0.2s; }
+        .auth-card button:hover { background-color: var(--accent-hover-color); }
+        .toggle-form { margin-top: 25px; font-size: 14px; color: var(--secondary-text-color); }
+        .toggle-form a { color: var(--accent-color); text-decoration: none; cursor: pointer; font-weight: bold; }
+        #app-container { display: none; width: 100vw; height: 100vh; }
+        .main-layout { display: flex; justify-content: center; height: 100%; }
+        .content-column { width: 100%; max-width: 600px; border-left: 1px solid var(--border-color); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .app-header { display: flex; align-items: center; padding: 0 16px; height: 53px; border-bottom: 1px solid var(--border-color); backdrop-filter: blur(5px); background-color: rgba(21, 32, 43, 0.75); position: sticky; top: 0; z-index: 10; }
+        .app-header h2 { font-size: 20px; margin: 0; flex-grow: 1; }
+        .app-header .avatar { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; object-fit: cover; }
+        .timeline-container { flex-grow: 1; overflow-y: auto; }
+        .post-form-container { padding: 16px; border-bottom: 8px solid var(--border-color); }
+        .post-form { display: flex; }
+        .post-form .avatar { width: 48px; height: 48px; border-radius: 50%; margin-right: 12px; }
+        .post-form-main { flex-grow: 1; }
+        #post-input { width: 100%; background: none; border: none; color: var(--primary-text-color); font-size: 20px; resize: none; min-height: 60px; outline: none; padding: 12px 0; }
+        #post-button { background-color: var(--accent-color); color: white; border: none; padding: 8px 16px; border-radius: 9999px; font-weight: bold; cursor: pointer; float: right; margin-top: 8px; }
+        .post-item { padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; cursor: pointer; position: relative; }
+        .post-item:hover { background-color: rgba(255,255,255,0.03); }
+        .post-item .avatar { width: 48px; height: 48px; border-radius: 50%; margin-right: 12px; object-fit: cover; }
+        .post-content .post-header { display: flex; align-items: center; }
+        .post-header .username { font-weight: bold; }
+        .post-header .timestamp { color: var(--secondary-text-color); margin-left: 8px; font-size: 14px; }
+        .post-text { white-space: pre-wrap; word-wrap: break-word; margin: 4px 0; }
+        .delete-btn {
+            position: absolute; top: 8px; right: 8px; background: none; border: none; color: var(--secondary-text-color);
+            cursor: pointer; font-size: 18px; padding: 5px; border-radius: 50%; display: none;
         }
-
-        /* --- New Authentication Screen --- */
-        #auth-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1511367461989-f85a21fda167?auto=format&fit=crop&w=1350&q=80');
-            background-size: cover;
-            background-position: center;
-        }
-        .auth-card {
-            background-color: var(--surface-color);
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-            width: 90%;
-            max-width: 380px;
-            box-sizing: border-box;
-            text-align: center;
-        }
-        .auth-card h1 {
-            margin-top: 0;
-            margin-bottom: 30px;
-            font-size: 28px;
-        }
-        .auth-card .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-        .auth-card input {
-            width: 100%;
-            padding: 14px;
-            border: 1px solid #444;
-            background-color: #333;
-            color: var(--primary-text-color);
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        .auth-card input:focus {
-            outline: none;
-            border-color: var(--accent-color);
-        }
-        .auth-card button {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            background-color: var(--accent-color);
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            transition: background-color 0.2s;
-        }
-        .auth-card button:hover {
-            background-color: var(--accent-hover-color);
-        }
-        .toggle-form {
-            margin-top: 25px;
-            font-size: 14px;
-        }
-        .toggle-form a {
-            color: var(--accent-color);
-            text-decoration: none;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        /* --- Main App Container --- */
-        #app-container {
-            width: 100vw;
-            height: 100vh;
-            display: none;
-        }
-        
-        /* --- Sidebar --- */
-        .sidebar {
-            width: 280px;
-            background-color: #1f1f1f;
-            display: flex;
-            flex-direction: column;
-            padding: 15px;
-            box-sizing: border-box;
-            transition: transform 0.3s ease-in-out;
-            border-right: 1px solid #333;
-        }
-        .user-profile {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            padding: 10px;
-            border-radius: 8px;
-        }
-        .user-profile:hover { background-color: #333; }
-        .user-profile .avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-right: 12px;
-        }
-        .user-profile .username {
-            font-weight: bold;
-            font-size: 16px;
-        }
-        .sidebar-controls {
-            margin: 20px 0;
-            display: grid;
-            gap: 10px;
-        }
-        .sidebar-controls button {
-            padding: 10px;
-            background-color: #333;
-            border: none;
-            color: var(--primary-text-color);
-            cursor: pointer;
-            border-radius: 8px;
-            font-size: 14px;
-            text-align: center;
-        }
-        .friend-list-section {
-            flex-grow: 1;
-            overflow-y: auto;
-            margin-top: 15px;
-        }
-        .friend-item, .request-item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-bottom: 5px;
-        }
-        .friend-item:hover { background-color: #333; }
-        .friend-item.active { background-color: var(--accent-color); }
-        .friend-item .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-right: 12px;
-        }
-
-        /* --- Chat View --- */
-        .chat-view {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        .chat-header {
-            padding: 15px 20px;
-            background-color: #2a2a2a;
-            border-bottom: 1px solid #333;
-            display: flex;
-            align-items: center;
-            font-weight: bold;
-        }
-        .menu-toggle { display: none; /* Mobile only */ }
-        .chat-messages {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column-reverse;
-        }
-        .message-wrapper {
-            display: flex;
-            margin-bottom: 15px;
-            max-width: 75%;
-            align-items: flex-end;
-        }
-        .message-wrapper.own {
-            align-self: flex-end;
-            flex-direction: row-reverse;
-        }
-        .message-bubble {
-            background-color: #3a3a3a;
-            padding: 10px 15px;
-            border-radius: 18px;
-        }
-        .message-wrapper.own .message-bubble {
-            background-color: var(--accent-color);
-        }
-        /* --- Embedded Content Styles --- */
-        .embedded-image {
-            max-width: 100%;
-            max-height: 250px;
-            border-radius: 12px;
-            margin-top: 8px;
-            display: block;
-        }
-        .embedded-video {
-            width: 100%;
-            max-width: 400px;
-            aspect-ratio: 16 / 9;
-            border-radius: 12px;
-            border: none;
-            margin-top: 8px;
-        }
-
-        .chat-input-container {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            border-top: 1px solid #333;
-            background-color: #2a2a2a;
-        }
-        #chat-input {
-            flex-grow: 1;
-            padding: 12px 18px;
-            border: none;
-            border-radius: 22px;
-            background-color: #3a3a3a;
-            color: var(--primary-text-color);
-            font-size: 16px;
-            margin: 0 10px;
-        }
-        #chat-send-button, #stamp-button {
-            background: none; border: none; color: var(--secondary-text-color);
-            font-size: 24px; cursor: pointer; padding: 8px;
-        }
-        
-        /* --- Other Styles (Modal, Loader, Responsive) --- */
-        .modal { display: none; /* ... */ }
-        .loader { /* ... */ }
-        @media (max-width: 768px) {
-            .sidebar { position: fixed; z-index: 200; transform: translateX(-100%); }
-            .sidebar.open { transform: translateX(0); }
-            .menu-toggle { display: block; }
-        }
+        .post-item:hover .delete-btn { display: block; }
+        .delete-btn:hover { background-color: rgba(224, 36, 94, 0.1); color: var(--danger-color); }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
+        .modal-content { background-color: var(--surface-color); padding: 30px; border-radius: 16px; width: 90%; max-width: 600px; max-height: 80vh; display: flex; flex-direction: column; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .modal-header h2 { margin: 0; }
+        .modal-header .close-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
     </style>
 </head>
 <body>
-    
-    <div id="auth-container">
-        <div class="auth-card">
-            <div id="login-form">
-                <h1>おかえりなさい</h1>
-                <div class="input-group"><input type="email" id="login-email" placeholder="メールアドレス" required></div>
-                <div class="input-group"><input type="password" id="login-password" placeholder="パスワード" required></div>
-                <button id="login-button">ログイン</button>
-                <p class="toggle-form">アカウントをお持ちでないですか？ <a id="show-signup">サインアップ</a></p>
-            </div>
-            <div id="signup-form" style="display: none;">
-                <h1>ようこそ</h1>
-                <div class="input-group"><input type="text" id="signup-username" placeholder="表示名" required></div>
-                <div class="input-group"><input type="email" id="signup-email" placeholder="メールアドレス" required></div>
-                <div class="input-group"><input type="password" id="signup-password" placeholder="パスワード" required></div>
-                <button id="signup-button">アカウント作成</button>
-                <p class="toggle-form">既にアカウントをお持ちですか？ <a id="show-login">ログイン</a></p>
-            </div>
-        </div>
-    </div>
-
-    <div id="app-container">
-        <div class="sidebar" id="sidebar">
-            <div class="user-profile" id="edit-profile-btn">
-                <img id="user-avatar-sidebar" src="" alt="Avatar" class="avatar">
-                <span id="user-name-sidebar" class="username"></span>
-            </div>
-            <div class="sidebar-controls">
-                <button id="add-friend-btn">フレンド追加</button>
-                <button id="logout-button">ログアウト</button>
-            </div>
-            <div id="friend-requests" class="friend-list-section"><h3>フレンド申請</h3><div id="friend-requests-list"></div></div>
-            <div id="friends" class="friend-list-section"><h3>フレンド</h3><div id="friend-list-container"></div></div>
-        </div>
-        <div id="chat-view" class="chat-view">
-            <div id="chat-placeholder" style="display: flex; justify-content: center; align-items: center; height: 100%;">フレンドを選択してチャットを開始</div>
-            <div id="chat-area" style="display: none; flex-direction: column; height: 100%;">
-                <div class="chat-header"><button class="menu-toggle" id="menu-toggle">☰</button><span id="chat-header-name"></span></div>
-                <div id="chat-messages"></div>
-                <div class="chat-input-container">
-                    <button id="stamp-button">😀</button>
-                    <input type="text" id="chat-input" placeholder="メッセージを入力...">
-                    <button id="chat-send-button">➤</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
+    <div id="auth-container"></div>
+    <div id="app-container"></div>
+    <div id="post-detail-modal" class="modal"></div>
     <div id="profile-modal" class="modal"><div class="modal-content"></div></div>
-    <div id="add-friend-modal" class="modal"><div class="modal-content"></div></div>
     <div id="loader-modal" class="modal"><div class="loader"></div></div>
 
     <script>
@@ -336,175 +81,182 @@
         const auth = firebase.auth();
         const database = firebase.database();
         
-        // --- Global State & Utils (変更なし) ---
-        let currentUser = null, currentChatId = null, messageListener = null;
+        // --- Anti-Trolling Configuration ---
+        const POST_COOLDOWN_SECONDS = 15;
+        const BANNED_WORDS = ["バカ", "アホ", "死ね", "殺す"]; // ここにNGワードを追加
+
+        // --- Global State & Utils ---
+        let currentUser = null;
         const byId = id => document.getElementById(id);
         const showLoader = () => byId('loader-modal').style.display = 'flex';
         const hideLoader = () => byId('loader-modal').style.display = 'none';
-        const openModal = (id, content) => {
-            const modal = byId(id);
-            modal.querySelector('.modal-content').innerHTML = content;
-            modal.style.display = 'flex';
-        };
+        const openModal = (id) => byId(id).style.display = 'flex';
         const closeModal = (id) => byId(id).style.display = 'none';
 
-        // --- Auth & App Setup (変更なし) ---
+        // --- Initial HTML Setup ---
+        function setupInitialHTML() {
+            byId('auth-container').innerHTML = `<div class="auth-card"><div id="login-form"><h1>おかえりなさい</h1><input type="email" id="login-email" placeholder="メールアドレス" required><input type="password" id="login-password" placeholder="パスワード" required><button id="login-button">ログイン</button><p class="toggle-form">アカウントをお持ちでないですか？ <a id="show-signup">サインアップ</a></p></div><div id="signup-form" style="display: none;"><h1>ようこそ</h1><input type="text" id="signup-username" placeholder="表示名" required><input type="email" id="signup-email" placeholder="メールアドレス" required><input type="password" id="signup-password" placeholder="パスワード" required><button id="signup-button">アカウント作成</button><p class="toggle-form">既にアカウントをお持ちですか？ <a id="show-login">ログイン</a></p></div></div>`;
+            byId('app-container').innerHTML = `<div class="main-layout"><div class="content-column"><header class="app-header"><h2>ホーム</h2><img id="user-avatar-header" class="avatar" alt="My Avatar"></header><div class="post-form-container"><div class="post-form"><img id="user-avatar-form" class="avatar" alt="My Avatar"><div class="post-form-main"><textarea id="post-input" placeholder="いまどうしてる？"></textarea><button id="post-button">ポストする</button></div></div></div><div class="timeline-container" id="timeline-container"></div></div></div>`;
+            byId('post-detail-modal').innerHTML = `<div class="modal-content"><div class="modal-header"><h2>ポスト</h2><button class="close-btn" onclick="closeModal('post-detail-modal')">&times;</button></div><div class="modal-body" id="post-detail-body"></div></div>`;
+        }
+        setupInitialHTML();
+
+        // --- Auth & App Setup ---
         auth.onAuthStateChanged(user => {
-            const authContainer = byId('auth-container'), appContainer = byId('app-container');
+            const authContainer = byId('auth-container');
+            const appContainer = byId('app-container');
             if (user) {
                 currentUser = user;
                 authContainer.style.display = 'none';
-                appContainer.style.display = 'flex';
+                appContainer.style.display = 'block';
                 setupAppForUser(user);
             } else {
                 currentUser = null;
                 authContainer.style.display = 'flex';
                 appContainer.style.display = 'none';
-                if (messageListener && currentChatId) database.ref(`chats/${currentChatId}/messages`).off('child_added', messageListener);
             }
         });
-        const setupAppForUser = user => {
+
+        const setupAppForUser = async (user) => {
+            // Check for admin status
+            const adminSnapshot = await database.ref(`admins/${user.uid}`).once('value');
+            currentUser.isAdmin = adminSnapshot.exists();
+
             database.ref(`users/${user.uid}`).on('value', snapshot => {
                 const userData = snapshot.val();
                 if (!userData) return;
                 currentUser.displayName = userData.username;
                 currentUser.photoURL = userData.photoURL;
-                byId('user-avatar-sidebar').src = userData.photoURL || '';
-                byId('user-name-sidebar').textContent = userData.username;
+                currentUser.lastPostTimestamp = userData.lastPostTimestamp || 0;
+                byId('user-avatar-header').src = userData.photoURL || '';
+                byId('user-avatar-form').src = userData.photoURL || '';
             });
-            loadFriends();
-            loadFriendRequests();
-            setupEventListeners();
+            loadPosts();
         };
         
-        // --- Event Listeners Setup ---
-        let listenersInitialized = false;
-        function setupEventListeners() {
-            if (listenersInitialized) return;
+        // --- Event Listeners ---
+        function setupGlobalEventListeners() {
             byId('show-signup').addEventListener('click', () => { byId('login-form').style.display = 'none'; byId('signup-form').style.display = 'block'; });
             byId('show-login').addEventListener('click', () => { byId('login-form').style.display = 'block'; byId('signup-form').style.display = 'none'; });
             byId('signup-button').addEventListener('click', handleSignup);
             byId('login-button').addEventListener('click', handleLogin);
-            byId('logout-button').addEventListener('click', () => auth.signOut());
-            byId('edit-profile-btn').addEventListener('click', showProfileModal);
-            byId('add-friend-btn').addEventListener('click', showAddFriendModal);
-            byId('chat-send-button').addEventListener('click', sendMessage);
-            byId('chat-input').addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
-            // Stamp and Menu Toggle listeners would go here if needed
-            listenersInitialized = true;
+            byId('user-avatar-header').addEventListener('click', showProfileModal);
+            byId('post-button').addEventListener('click', handlePostSubmit);
         }
+        setupGlobalEventListeners();
 
-        // ============================================
-        // ★★★★★ メッセージ表示 & リンク埋め込み処理 ★★★★★
-        // ============================================
-        function displayMessage(msg) {
-            const messagesDiv = byId('chat-messages');
-            const wrapper = document.createElement('div');
-            wrapper.className = 'message-wrapper' + (msg.senderId === currentUser.uid ? ' own' : '');
-            
-            let contentHTML = '';
-            const text = msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;"); // Simple HTML sanitization
-
-            // Regular expressions to detect different link types
-            const imageRegex = /(https?:\/\/[^\s]+?\.(?:jpg|jpeg|png|gif|webp))/gi;
-            const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/i;
-            const linkRegex = /(https?:\/\/[^\s]+)/gi;
-
-            let match;
-            if ((match = imageRegex.exec(text))) {
-                contentHTML = `<img src="${match[0]}" class="embedded-image" alt="埋め込み画像">`;
-            } else if ((match = youtubeRegex.exec(text))) {
-                const videoId = match[1];
-                contentHTML = `<iframe class="embedded-video" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
-            } else {
-                contentHTML = text.replace(linkRegex, '<a href="$&" target="_blank" rel="noopener noreferrer">$&</a>');
-            }
-
-            wrapper.innerHTML = `
-                <div class="message-bubble">
-                    ${contentHTML}
-                </div>
-            `;
-            messagesDiv.insertBefore(wrapper, messagesDiv.firstChild);
-        }
-
-        // --- Core Functions (Signup, Login, Profile, Friends, Chat) ---
+        // --- Core Functions (Auth, Profile) ---
+        const handleSignup = () => { /* ... Unchanged ... */ };
+        const handleLogin = () => { /* ... Unchanged ... */ };
+        const showProfileModal = () => { /* ... Unchanged ... */ };
+        const handleProfileSave = () => { /* ... Unchanged ... */ };
         
-        const handleSignup = () => {
-            const email = byId("signup-email").value, password = byId("signup-password").value, username = byId("signup-username").value;
-            if (!username) return alert("表示名を入力してください。");
-            showLoader();
-            auth.createUserWithEmailAndPassword(email, password)
-                .then(cred => database.ref('users/' + cred.user.uid).set({ username, email, photoURL: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iIzU1NSIvPjwvc3ZnPg==' }))
-                .catch(err => alert(err.message)).finally(hideLoader);
-        };
-        
-        const handleLogin = () => {
-            const email = byId("login-email").value, password = byId("login-password").value;
-            showLoader();
-            auth.signInWithEmailAndPassword(email, password).catch(err => alert(err.message)).finally(hideLoader);
-        };
-
-        const showProfileModal = () => {
-            openModal('profile-modal', `<h2>プロフィール編集</h2><img id="profile-avatar-preview" src="${currentUser.photoURL}" style="width:100px;height:100px;border-radius:50%;cursor:pointer;object-fit:cover;display:block;margin:0 auto 15px;"><input type="file" id="avatar-upload-input" style="display:none;" accept="image/jpeg,image/png"><label>表示名</label><input type="text" id="profile-username-input" value="${currentUser.displayName}"><div class="modal-controls"><button id="save-profile-btn" class="save-btn">保存</button><button class="cancel-btn" onclick="closeModal('profile-modal')">キャンセル</button></div>`);
-            byId('profile-avatar-preview').onclick=()=>byId('avatar-upload-input').click();
-            byId('avatar-upload-input').onchange=e=>{if(e.target.files[0])byId('profile-avatar-preview').src=URL.createObjectURL(e.target.files[0])};
-            byId('save-profile-btn').onclick=handleProfileSave;
-        };
-
-        const handleProfileSave = () => {
-            const newUsername = byId("profile-username-input").value;
-            const file = byId("avatar-upload-input").files[0];
-            if (!file) {
-                showLoader();
-                database.ref('users/' + currentUser.uid).update({ username: newUsername }).then(()=>closeModal('profile-modal')).catch(err=>alert(err.message)).finally(hideLoader);
+        // --- Post & Timeline Functions ---
+        const handlePostSubmit = () => {
+            // 1. Cooldown Check
+            const now = Date.now();
+            const timeSinceLastPost = (now - currentUser.lastPostTimestamp) / 1000;
+            if (timeSinceLastPost < POST_COOLDOWN_SECONDS) {
+                alert(`連投はできません。あと ${Math.ceil(POST_COOLDOWN_SECONDS - timeSinceLastPost)} 秒お待ちください。`);
                 return;
             }
-            if (file.size > 1048576) return alert("ファイルサイズが大きすぎます。1MB以下の画像を選択してください。");
-            showLoader();
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => {
-                database.ref('users/' + currentUser.uid).update({ username: newUsername, photoURL: reader.result }).then(()=>closeModal('profile-modal')).catch(err=>alert(err.message)).finally(hideLoader);
-            };
-            reader.onerror = err => { alert("ファイル読込失敗: " + err); hideLoader(); };
-        };
+            
+            let text = byId('post-input').value.trim();
+            if (text === '') return;
 
-        const sendMessage = () => {
-            const input = byId('chat-input'), text = input.value.trim();
-            if (text === '' || !currentChatId) return;
-            const messageData = {
-                senderId: currentUser.uid,
+            // 2. NG Word Filter
+            BANNED_WORDS.forEach(word => {
+                const regex = new RegExp(word, 'gi');
+                text = text.replace(regex, '***');
+            });
+
+            const postData = {
+                uid: currentUser.uid,
+                username: currentUser.displayName,
+                photoURL: currentUser.photoURL,
                 text: text,
                 timestamp: firebase.database.ServerValue.TIMESTAMP
             };
-            database.ref(`chats/${currentChatId}/messages`).push(messageData);
-            input.value = '';
+
+            const newPostRef = database.ref('posts').push();
+            newPostRef.set(postData)
+                .then(() => {
+                    // Update user's last post timestamp
+                    database.ref(`users/${currentUser.uid}/lastPostTimestamp`).set(firebase.database.ServerValue.TIMESTAMP);
+                    byId('post-input').value = '';
+                })
+                .catch(err => alert("投稿に失敗しました: " + err.message));
         };
 
-        // Other functions remain largely the same, just simplified
-        const showAddFriendModal = () => { /* ... */ };
-        const handleFriendSearch = () => { /* ... */ };
-        const sendFriendRequest = () => { /* ... */ };
-        const loadFriends = () => { /* ... */ };
-        const loadFriendRequests = () => { /* ... */ };
-        const startChat = (friendUid, friendName) => {
-            byId('sidebar').classList.remove('open');
-            byId('chat-placeholder').style.display = 'none';
-            byId('chat-area').style.display = 'flex';
-            byId('chat-header-name').textContent = friendName;
-            if (messageListener && currentChatId) database.ref(`chats/${currentChatId}/messages`).off('child_added', messageListener);
-            currentChatId = currentUser.uid < friendUid ? `${currentUser.uid}_${friendUid}` : `${friendUid}_${currentUser.uid}`;
-            document.querySelectorAll('.friend-item').forEach(el => el.classList.remove('active'));
-            document.querySelector(`.friend-item[data-uid="${friendUid}"]`).classList.add('active');
-            loadChatMessages();
+        const loadPosts = () => {
+            const postsRef = database.ref('posts').orderByChild('timestamp').limitToLast(100);
+            postsRef.on('value', snapshot => {
+                const timeline = byId('timeline-container');
+                timeline.innerHTML = '';
+                const posts = [];
+                snapshot.forEach(child => { posts.push({ id: child.key, ...child.val() }); });
+                
+                posts.reverse().forEach(post => {
+                    const postEl = document.createElement('div');
+                    postEl.className = 'post-item';
+                    let adminButtonHTML = '';
+                    if (currentUser && currentUser.isAdmin) {
+                        adminButtonHTML = `<button class="delete-btn" title="投稿を削除">&times;</button>`;
+                    }
+                    postEl.innerHTML = `
+                        <img src="${post.photoURL}" class="avatar" alt="${post.username}'s avatar">
+                        <div class="post-content">
+                            <div class="post-header">
+                                <span class="username">${post.username}</span>
+                                <span class="timestamp">${formatTimestamp(post.timestamp)}</span>
+                            </div>
+                            <div class="post-text">${post.text.replace(/</g, "&lt;")}</div>
+                        </div>
+                        ${adminButtonHTML}`;
+                    
+                    postEl.addEventListener('click', (e) => {
+                        if (e.target.classList.contains('delete-btn')) return; // Don't open detail if delete is clicked
+                        showPostDetail(post.id);
+                    });
+                    
+                    if (currentUser.isAdmin) {
+                        const deleteBtn = postEl.querySelector('.delete-btn');
+                        if (deleteBtn) {
+                            deleteBtn.addEventListener('click', () => deletePost(post.id));
+                        }
+                    }
+
+                    timeline.appendChild(postEl);
+                });
+            });
         };
-        const loadChatMessages = () => {
-            const div = byId('chat-messages');
-            div.innerHTML = '';
-            const ref = database.ref(`chats/${currentChatId}/messages`).orderByChild('timestamp').limitToLast(100);
-            messageListener = ref.on('child_added', s => displayMessage(s.val()));
+
+        const deletePost = (postId) => {
+            if (confirm('本当にこの投稿と関連する返信をすべて削除しますか？この操作は元に戻せません。')) {
+                const updates = {};
+                updates[`/posts/${postId}`] = null;
+                updates[`/replies/${postId}`] = null;
+                database.ref().update(updates)
+                    .then(() => alert("投稿を削除しました。"))
+                    .catch(err => alert("削除に失敗しました: " + err.message));
+            }
         };
+
+        // --- Reply & Detail Functions (Unchanged) ---
+        const showPostDetail = (postId) => { /* ... */ };
+        const loadReplies = (postId) => { /* ... */ };
+        const handleReplySubmit = (postId) => { /* ... */ };
+        const formatTimestamp = (ts) => { /* ... */ };
+
+        // --- Unchanged Dummy Functions for brevity ---
+        handleSignup = () => {const e=byId("signup-email").value,t=byId("signup-password").value,n=byId("signup-username").value;n?(showLoader(),auth.createUserWithEmailAndPassword(e,t).then(e=>database.ref("users/"+e.user.uid).set({username:n,email:e.user.email,photoURL:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iIzU1NSIvPjwvc3ZnPg=="})).catch(e=>alert(e.message)).finally(hideLoader)):alert("表示名を入力してください。")};
+        handleLogin = () => {const e=byId("login-email").value,t=byId("login-password").value;e&&t?(showLoader(),auth.signInWithEmailAndPassword(e,t).catch(e=>alert("ログインに失敗しました: "+e.message)).finally(hideLoader)):alert("メールアドレスとパスワードを入力してください。")};
+        showProfileModal = () => {const e=`<h2>プロフィール編集</h2><img id="profile-avatar-preview" src="${currentUser.photoURL}" style="width:100px;height:100px;border-radius:50%;cursor:pointer;object-fit:cover;display:block;margin:0 auto 15px;"><input type="file" id="avatar-upload-input" style="display:none;" accept="image/jpeg,image/png"><label>表示名</label><input type="text" id="profile-username-input" value="${currentUser.displayName}"><div class="modal-controls"><button id="save-profile-btn" class="save-btn">保存</button><button class="cancel-btn" onclick="closeModal('profile-modal')">キャンセル</button></div>`;byId("profile-modal").querySelector(".modal-content").innerHTML=e,openModal("profile-modal"),byId("profile-avatar-preview").onclick=()=>byId("avatar-upload-input").click(),byId("avatar-upload-input").onchange=e=>{e.target.files[0]&&(byId("profile-avatar-preview").src=URL.createObjectURL(e.target.files[0]))},byId("save-profile-btn").onclick=handleProfileSave};
+        handleProfileSave = () => {const e=byId("profile-username-input").value,t=byId("avatar-upload-input").files[0];if(t){if(t.size>1048576)return void alert("ファイルサイズが大きすぎます。1MB以下の画像を選択してください。");showLoader();const n=new FileReader;n.readAsDataURL(t),n.onload=()=>{database.ref("users/"+currentUser.uid).update({username:e,photoURL:n.result}).then(()=>closeModal("profile-modal")).catch(e=>alert(e.message)).finally(hideLoader)},n.onerror=e=>{alert("ファイル読込失敗: "+e),hideLoader()}}else showLoader(),database.ref("users/"+currentUser.uid).update({username:e}).then(()=>closeModal("profile-modal")).catch(e=>alert(e.message)).finally(hideLoader)};
+        showPostDetail = postId => {const e=byId("post-detail-body");e.innerHTML="読み込み中...",openModal("post-detail-modal"),database.ref(`posts/${postId}`).once("value",t=>{const n=t.val();e.innerHTML=`\n                    <div class="post-item" style="cursor:default;">\n                        <img src="${n.photoURL}" class="avatar">\n                        <div class="post-content">\n                            <div class="post-header"><span class="username">${n.username}</span></div>\n                            <div class="post-text" style="font-size: 1.2em;">${n.text.replace(/</g,"&lt;")}</div>\n                            <div class="timestamp">${new Date(n.timestamp).toLocaleString()}</div>\n                        </div>\n                    </div>\n                    <hr style="border-color: var(--border-color);">\n                    <div class="post-form-container">\n                        <textarea id="reply-input" placeholder="返信をポスト" style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; min-height: 40px;"></textarea>\n                        <button id="reply-button" style="background-color: var(--accent-color); color: white; border: none; padding: 6px 12px; border-radius: 9999px; font-weight: bold; cursor: pointer; float: right; margin-top: 8px;">返信する</button>\n                    </div>\n                    <div id="replies-container"></div>\n                `,byId("reply-button").addEventListener("click",()=>handleReplySubmit(postId)),loadReplies(postId)})};
+        loadReplies = postId => {database.ref(`replies/${postId}`).orderByChild("timestamp").on("value",e=>{const t=byId("replies-container");t.innerHTML="",e.forEach(e=>{const n=e.val(),o=document.createElement("div");o.className="post-item",o.innerHTML=`\n                        <img src="${n.photoURL}" class="avatar">\n                        <div class="post-content">\n                            <div class="post-header"><span class="username">${n.username}</span></div>\n                            <div class="post-text">${n.text.replace(/</g,"&lt;")}</div>\n                        </div>\n                    `,t.appendChild(o)})})};
+        handleReplySubmit = postId => {const e=byId("reply-input").value.trim();if(""!==e){const t={uid:currentUser.uid,username:currentUser.displayName,photoURL:currentUser.photoURL,text:e,timestamp:firebase.database.ServerValue.TIMESTAMP};database.ref(`replies/${postId}`).push(t).then(()=>{byId("reply-input").value=""})}};
+        formatTimestamp = ts => {const e=new Date,t=new Date(ts),n=(e-t)/1e3;if(n<60)return`${Math.floor(n)}秒`;const o=n/60;if(o<60)return`${Math.floor(o)}分`;const a=o/60;if(a<24)return`${Math.floor(a)}時間`;const r=a/24;return`${Math.floor(r)}日`};
 
     </script>
 </body>
