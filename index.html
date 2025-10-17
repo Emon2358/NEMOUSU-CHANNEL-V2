@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ねもうすちゃんねる v2</title>
+    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-storage-compat.js"></script>
+    <style>
+        /* --- 全体的なスタイル --- */
+        :root {
+            --bg-color: #121212;
+            --primary-surface-color: #1e1e1e;
+            --secondary-surface-color: #2a2a2a;
+            --primary-text-color: #e0e0e0;
+            --secondary-text-color: #a0a0a0;
+            --accent-color: #007bff;
+            --accent-hover-color: #0056b3;
+            --error-color: #dc3545;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-text-color);
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* --- 認証画面 --- */
+        .auth-container {
+            width: 320px;
+            padding: 30px;
+            background-color: var(--primary-surface-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .auth-container h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+
+        .auth-form input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid var(--secondary-surface-color);
+            background-color: var(--bg-color);
+            color: var(--primary-text-color);
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .auth-form button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .auth-form button:hover {
+            background-color: var(--accent-hover-color);
+        }
+
+        .toggle-form {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .toggle-form a {
+            color: var(--accent-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* --- メインアプリ画面 --- */
+        .app-container {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+        }
+
+        /* サイドバー */
+        .sidebar {
+            width: 280px;
+            background-color: var(--primary-surface-color);
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+        
+        .sidebar-header {
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--secondary-surface-color);
+        }
+        
+        .sidebar-header .user-profile {
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-header .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        
+        .sidebar-header .username {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .sidebar-controls {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .sidebar-controls button {
+            flex-grow: 1;
+            padding: 8px;
+            background-color: var(--secondary-surface-color);
+            border: none;
+            color: var(--primary-text-color);
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .friend-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        .friend-list h3 {
+            margin-top: 0;
+            color: var(--secondary-text-color);
+            font-size: 14px;
+        }
+        
+        .friend-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .friend-item:hover, .friend-item.active {
+            background-color: var(--secondary-surface-color);
+        }
+        
+        .friend-item .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 10px;
+        }
+
+        /* チャット画面 */
+        .chat-view {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-color);
+            background-size: cover;
+            background-position: center;
+        }
+
+        #chat-placeholder {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: var(--secondary-text-color);
+            font-size: 20px;
+        }
+
+        #chat-header {
+            padding: 15px 20px;
+            background-color: rgba(30, 30, 30, 0.8);
+            border-bottom: 1px solid var(--secondary-surface-color);
+            font-weight: bold;
+        }
+        
+        #chat-messages {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column-reverse; /* 新しいメッセージが下に来るように */
+        }
+        
+        .message-wrapper {
+             display: flex;
+             flex-direction: column;
+        }
+
+        .message-bubble {
+            display: flex;
+            margin-bottom: 15px;
+            max-width: 70%;
+        }
+
+        .message-bubble .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .message-content {
+            background-color: var(--primary-surface-color);
+            padding: 10px 15px;
+            border-radius: 15px;
+        }
+        
+        .message-content .username {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .message-content .timestamp {
+            font-size: 10px;
+            color: var(--secondary-text-color);
+            text-align: right;
+        }
+
+        .message-content img.embedded, .message-content video.embedded {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-top: 5px;
+        }
+        .message-content iframe.embedded {
+            width: 400px;
+            height: 225px;
+            border: none;
+            border-radius: 10px;
+            margin-top: 5px;
+        }
+        
+        /* 自分のメッセージ */
+        .message-wrapper.own {
+            align-items: flex-end;
+        }
+        
+        .message-wrapper.own .message-bubble {
+            flex-direction: row-reverse;
+        }
+
+        .message-wrapper.own .message-bubble .avatar {
+            margin-left: 10px;
+            margin-right: 0;
+        }
+        
+        .message-wrapper.own .message-content {
+            background-color: var(--accent-color);
+        }
+        
+        #chat-input-container {
+            display: flex;
+            padding: 20px;
+            background-color: rgba(30, 30, 30, 0.8);
+        }
+        
+        #chat-input {
+            flex-grow: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 20px;
+            background-color: var(--secondary-surface-color);
+            color: var(--primary-text-color);
+            margin-right: 10px;
+        }
+
+        #chat-send-button, #file-upload-button {
+            padding: 10px 15px;
+            border: none;
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        #file-upload-button {
+            margin-right: 10px;
+        }
+        #file-upload-input {
+            display: none;
+        }
+
+        /* --- モーダルウィンドウ --- */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: var(--primary-surface-color);
+            padding: 30px;
+            border-radius: 10px;
+            width: 400px;
+        }
+        .modal-content h2 { margin-top: 0; }
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+            background-color: var(--bg-color);
+            border: 1px solid var(--secondary-surface-color);
+            color: var(--primary-text-color);
+        }
+        .modal-controls {
+            text-align: right;
+            margin-top: 20px;
+        }
+        .modal-controls button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .modal-controls .save-btn { background-color: var(--accent-color); color: white; }
+        .modal-controls .cancel-btn { background-color: var(--secondary-surface-color); color: var(--primary-text-color); margin-left: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-container">
+        <div id="login-form" class="auth-form">
+            <h1>ログイン</h1>
+            <input type="email" id="login-email" placeholder="メールアドレス" required>
+            <input type="password" id="login-password" placeholder="パスワード" required>
+            <button id="login-button">ログイン</button>
+            <p class="toggle-form">アカウントをお持ちでないですか？ <a id="show-signup">サインアップ</a></p>
+        </div>
+        <div id="signup-form" class="auth-form" style="display: none;">
+            <h1>サインアップ</h1>
+            <input type="text" id="signup-username" placeholder="表示名" required>
+            <input type="email" id="signup-email" placeholder="メールアドレス" required>
+            <input type="password" id="signup-password" placeholder="パスワード" required>
+            <button id="signup-button">サインアップ</button>
+            <p class="toggle-form">既にアカウントをお持ちですか？ <a id="show-login">ログイン</a></p>
+        </div>
+    </div>
+
+    <div id="app-container" class="app-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                 <div class="user-profile">
+                    <img id="user-avatar-sidebar" src="default_avatar.png" alt="Avatar" class="avatar">
+                    <div>
+                        <span id="user-name-sidebar" class="username">ユーザー名</span>
+                    </div>
+                </div>
+            </div>
+            <div class="sidebar-controls">
+                <button id="add-friend-btn">フレンド追加</button>
+                <button id="logout-button">ログアウト</button>
+            </div>
+            <div id="friend-requests" class="friend-list">
+                <h3>フレンド申請</h3>
+                <div id="friend-requests-list"></div>
+            </div>
+            <div id="friends" class="friend-list">
+                <h3>フレンド</h3>
+                <div id="friend-list-container"></div>
+            </div>
+        </div>
+        <div id="chat-view" class="chat-view">
+            <div id="chat-placeholder">フレンドを選択してチャットを開始</div>
+            <div id="chat-area" style="display: none; flex-direction: column; height: 100%;">
+                <div id="chat-header"></div>
+                <div id="chat-messages"></div>
+                <div id="chat-input-container">
+                    <input type="file" id="file-upload-input" accept="image/*,video/*">
+                    <button id="file-upload-button">📎</button>
+                    <input type="text" id="chat-input" placeholder="メッセージを入力...">
+                    <button id="chat-send-button">送信</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="profile-modal" class="modal">
+        <div class="modal-content">
+            <h2>プロフィール編集</h2>
+            <p>アイコンをクリックして変更</p>
+            <img id="profile-avatar-preview" src="" alt="Avatar" style="width: 100px; height: 100px; border-radius: 50%; cursor: pointer; object-fit: cover;">
+            <input type="file" id="avatar-upload-input" style="display: none;" accept="image/*">
+            <br><br>
+            <label for="profile-username-input">表示名</label>
+            <input type="text" id="profile-username-input" placeholder="新しい表示名">
+            <div class="modal-controls">
+                <button id="save-profile-btn" class="save-btn">保存</button>
+                <button class="cancel-btn" onclick="closeModal('profile-modal')">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="add-friend-modal" class="modal">
+        <div class="modal-content">
+            <h2>フレンドを追加</h2>
+            <label for="search-user-input">メールアドレスでユーザーを検索</label>
+            <input type="email" id="search-user-input" placeholder="friend@example.com">
+            <button id="search-user-btn">検索</button>
+            <div id="search-results"></div>
+            <div class="modal-controls">
+                <button class="cancel-btn" onclick="closeModal('add-friend-modal')">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Firebase configuration (元のコードと同じものを設定してください)
+      const firebaseConfig = {
+        apiKey: "AIzaSyC-vRKkPaG50imvk55tv91vj7GWNuXe004",
+        authDomain: "nemousu-636eb.firebaseapp.com",
+        databaseURL: "https://nemousu-636eb-default-rtdb.firebaseio.com",
+        projectId: "nemousu-636eb",
+        storageBucket: "nemousu-636eb.appspot.com",
+        messagingSenderId: "891021279714",
+        appId: "1:891021279714:web:c438fc1879e2311e8539bb",
+        measurementId: "G-2076VXPFC4",
+      };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        const auth = firebase.auth();
+        const database = firebase.database();
+        const storage = firebase.storage();
+        
+        // --- グローバル変数 ---
+        let currentUser = null;
+        let currentChatId = null;
+        let messageListener = null;
+
+        // --- DOM要素 ---
+        const authContainer = document.getElementById('auth-container');
+        const appContainer = document.getElementById('app-container');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        
+        // --- 認証状態の監視 ---
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                authContainer.style.display = 'none';
+                appContainer.style.display = 'flex';
+                setupUserProfile(user);
+                loadFriends();
+                loadFriendRequests();
+            } else {
+                currentUser = null;
+                authContainer.style.display = 'flex';
+                appContainer.style.display = 'none';
+                if (messageListener && currentChatId) {
+                   database.ref(`chats/${currentChatId}/messages`).off('child_added', messageListener);
+                }
+            }
+        });
+
+        // --- 認証機能 ---
+        document.getElementById('show-signup').addEventListener('click', () => {
+            loginForm.style.display = 'none';
+            signupForm.style.display = 'block';
+        });
+
+        document.getElementById('show-login').addEventListener('click', () => {
+            loginForm.style.display = 'block';
+            signupForm.style.display = 'none';
+        });
+
+        document.getElementById('signup-button').addEventListener('click', () => {
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const username = document.getElementById('signup-username').value;
+
+            if (!username) {
+                alert('表示名を入力してください。');
+                return;
+            }
+
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(userCredential => {
+                    const user = userCredential.user;
+                    // Authプロファイルとデータベースにユーザー情報を保存
+                    return user.updateProfile({
+                        displayName: username,
+                        photoURL: 'https://firebasestorage.googleapis.com/v0/b/nemousu-636eb.appspot.com/o/default_avatar.png?alt=media&token=e110756e-82b5-4166-9323-e578a1f879e9' // デフォルトアバターのURL
+                    }).then(() => {
+                        database.ref('users/' + user.uid).set({
+                            username: username,
+                            email: user.email,
+                            photoURL: 'https://firebasestorage.googleapis.com/v0/b/nemousu-636eb.appspot.com/o/default_avatar.png?alt=media&token=e110756e-82b5-4166-9323-e578a1f879e9'
+                        });
+                    });
+                })
+                .catch(error => alert(`サインアップ失敗: ${error.message}`));
+        });
+
+        document.getElementById('login-button').addEventListener('click', () => {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            auth.signInWithEmailAndPassword(email, password)
+                .catch(error => alert(`ログイン失敗: ${error.message}`));
+        });
+
+        document.getElementById('logout-button').addEventListener('click', () => {
+            auth.signOut();
+        });
+
+        // --- プロフィール機能 ---
+        function setupUserProfile(user) {
+            document.getElementById('user-avatar-sidebar').src = user.photoURL || 'default_avatar.png';
+            document.getElementById('user-name-sidebar').textContent = user.displayName;
+        }
+
+        document.getElementById('user-avatar-sidebar').addEventListener('click', () => {
+            document.getElementById('profile-avatar-preview').src = currentUser.photoURL;
+            document.getElementById('profile-username-input').value = currentUser.displayName;
+            openModal('profile-modal');
+        });
+        
+        document.getElementById('profile-avatar-preview').addEventListener('click', () => {
+            document.getElementById('avatar-upload-input').click();
+        });
+
+        document.getElementById('avatar-upload-input').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    document.getElementById('profile-avatar-preview').src = event.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('save-profile-btn').addEventListener('click', () => {
+            const newUsername = document.getElementById('profile-username-input').value;
+            const file = document.getElementById('avatar-upload-input').files[0];
+            
+            if (!newUsername) {
+                alert('表示名は必須です。');
+                return;
+            }
+
+            if (file) {
+                // 新しいアバターが選択された場合
+                const filePath = `avatars/${currentUser.uid}/${file.name}`;
+                const fileRef = storage.ref(filePath);
+                fileRef.put(file).then(snapshot => {
+                    snapshot.ref.getDownloadURL().then(photoURL => {
+                        updateUserProfile(newUsername, photoURL);
+                    });
+                });
+            } else {
+                // 名前のみ変更の場合
+                updateUserProfile(newUsername, currentUser.photoURL);
+            }
+        });
+
+        function updateUserProfile(username, photoURL) {
+             currentUser.updateProfile({
+                displayName: username,
+                photoURL: photoURL
+            }).then(() => {
+                database.ref('users/' + currentUser.uid).update({
+                    username: username,
+                    photoURL: photoURL
+                });
+                setupUserProfile(currentUser);
+                closeModal('profile-modal');
+                alert('プロフィールを更新しました。');
+            }).catch(error => alert('更新失敗: ' + error.message));
+        }
+
+        // --- フレンド機能 ---
+        document.getElementById('add-friend-btn').addEventListener('click', () => openModal('add-friend-modal'));
+
+        document.getElementById('search-user-btn').addEventListener('click', () => {
+            const searchEmail = document.getElementById('search-user-input').value;
+            const resultsDiv = document.getElementById('search-results');
+            resultsDiv.innerHTML = '検索中...';
+
+            database.ref('users').orderByChild('email').equalTo(searchEmail).once('value', snapshot => {
+                if (snapshot.exists()) {
+                    snapshot.forEach(childSnapshot => {
+                        const uid = childSnapshot.key;
+                        const userData = childSnapshot.val();
+
+                        if (uid === currentUser.uid) {
+                             resultsDiv.innerHTML = '<p>自分自身を追加することはできません。</p>';
+                             return;
+                        }
+
+                        resultsDiv.innerHTML = `
+                            <div>
+                                <img src="${userData.photoURL}" width="40" height="40" style="border-radius:50%">
+                                <span>${userData.username}</span>
+                                <button onclick="sendFriendRequest('${uid}')">申請を送る</button>
+                            </div>
+                        `;
+                    });
+                } else {
+                    resultsDiv.innerHTML = '<p>ユーザーが見つかりません。</p>';
+                }
+            });
+        });
+        
+        function sendFriendRequest(targetUid) {
+            const updates = {};
+            updates[`/friendRequests/${targetUid}/${currentUser.uid}`] = true;
+            updates[`/sentFriendRequests/${currentUser.uid}/${targetUid}`] = true;
+            
+            database.ref().update(updates).then(() => {
+                alert('フレンド申請を送信しました。');
+                document.getElementById('search-results').innerHTML = '';
+            });
+        }
+        
+        function loadFriendRequests() {
+            const requestsRef = database.ref(`friendRequests/${currentUser.uid}`);
+            requestsRef.on('value', snapshot => {
+                const listDiv = document.getElementById('friend-requests-list');
+                listDiv.innerHTML = '';
+                if (snapshot.exists()) {
+                    snapshot.forEach(childSnapshot => {
+                        const senderUid = childSnapshot.key;
+                        database.ref(`users/${senderUid}`).once('value', userSnapshot => {
+                           const userData = userSnapshot.val();
+                           const requestEl = document.createElement('div');
+                           requestEl.innerHTML = `
+                                <span>${userData.username}からの申請</span>
+                                <button onclick="acceptFriendRequest('${senderUid}')">承認</button>
+                                <button onclick="rejectFriendRequest('${senderUid}')">拒否</button>
+                           `;
+                           listDiv.appendChild(requestEl);
+                        });
+                    });
+                }
+            });
+        }
+        
+        function acceptFriendRequest(senderUid) {
+            const updates = {};
+            updates[`/friends/${currentUser.uid}/${senderUid}`] = true;
+            updates[`/friends/${senderUid}/${currentUser.uid}`] = true;
+            updates[`/friendRequests/${currentUser.uid}/${senderUid}`] = null;
+            updates[`/sentFriendRequests/${senderUid}/${currentUser.uid}`] = null;
+            
+            database.ref().update(updates);
+        }
+        
+        function rejectFriendRequest(senderUid) {
+            const updates = {};
+            updates[`/friendRequests/${currentUser.uid}/${senderUid}`] = null;
+            updates[`/sentFriendRequests/${senderUid}/${currentUser.uid}`] = null;
+            
+            database.ref().update(updates);
+        }
+
+        function loadFriends() {
+            const friendsRef = database.ref(`friends/${currentUser.uid}`);
+            friendsRef.on('value', snapshot => {
+                const listDiv = document.getElementById('friend-list-container');
+                listDiv.innerHTML = '';
+                if (snapshot.exists()) {
+                    snapshot.forEach(childSnapshot => {
+                        const friendUid = childSnapshot.key;
+                        database.ref(`users/${friendUid}`).once('value', userSnapshot => {
+                            const userData = userSnapshot.val();
+                            const friendEl = document.createElement('div');
+                            friendEl.className = 'friend-item';
+                            friendEl.dataset.uid = friendUid;
+                            friendEl.innerHTML = `
+                                <img src="${userData.photoURL}" alt="Avatar" class="avatar">
+                                <span>${userData.username}</span>
+                            `;
+                            friendEl.onclick = () => startChat(friendUid, userData.username, userData.photoURL);
+                            listDiv.appendChild(friendEl);
+                        });
+                    });
+                }
+            });
+        }
+        
+        // --- チャット機能 ---
+        function startChat(friendUid, friendName, friendAvatar) {
+            document.getElementById('chat-placeholder').style.display = 'none';
+            document.getElementById('chat-area').style.display = 'flex';
+            document.getElementById('chat-header').textContent = friendName;
+
+            // 以前のリスナーを解除
+            if (messageListener && currentChatId) {
+                database.ref(`chats/${currentChatId}/messages`).off('child_added', messageListener);
+            }
+
+            // 新しいチャットIDを生成 (UIDをソートして一意性を担保)
+            currentChatId = currentUser.uid < friendUid ? `${currentUser.uid}_${friendUid}` : `${friendUid}_${currentUser.uid}`;
+            
+            // UIのアクティブ状態を更新
+            document.querySelectorAll('.friend-item').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.friend-item[data-uid="${friendUid}"]`).classList.add('active');
+
+            loadChatMessages();
+        }
+
+        function loadChatMessages() {
+            const messagesDiv = document.getElementById('chat-messages');
+            messagesDiv.innerHTML = '';
+            
+            const messagesRef = database.ref(`chats/${currentChatId}/messages`).orderByChild('timestamp').limitToLast(100);
+            
+            messageListener = messagesRef.on('child_added', snapshot => {
+                const msgData = snapshot.val();
+                displayMessage(msgData);
+            });
+        }
+
+        function displayMessage(msgData) {
+            const messagesDiv = document.getElementById('chat-messages');
+            const wrapper = document.createElement('div');
+            wrapper.className = 'message-wrapper';
+            
+            if(msgData.senderId === currentUser.uid) {
+                wrapper.classList.add('own');
+            }
+
+            let messageBody = '';
+            // URLを検出して埋め込み
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            const textWithLinks = msgData.text.replace(urlRegex, url => `<a href="${url}" target="_blank">${url}</a>`);
+
+            if (msgData.type === 'text') {
+                 messageBody = textWithLinks;
+                 // 特定のサービスの埋め込み
+                 const youtubeMatch = msgData.text.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com|youtu\.be)\/(?:watch\?v=)?(.+)/);
+                 if (youtubeMatch) {
+                    messageBody += `<br><iframe class="embedded" src="https://www.youtube.com/embed/${youtubeMatch[1]}" frameborder="0" allowfullscreen></iframe>`;
+                 }
+            } else if (msgData.type === 'image') {
+                messageBody = `<img src="${msgData.fileURL}" class="embedded" alt="uploaded image">`;
+            } else if (msgData.type === 'video') {
+                messageBody = `<video src="${msgData.fileURL}" class="embedded" controls></video>`;
+            }
+
+            wrapper.innerHTML = `
+                <div class="message-bubble">
+                    <img src="${msgData.senderAvatar}" alt="Avatar" class="avatar">
+                    <div class="message-content">
+                        <div class="username">${msgData.senderName}</div>
+                        <div>${messageBody}</div>
+                        <div class="timestamp">${new Date(msgData.timestamp).toLocaleTimeString()}</div>
+                    </div>
+                </div>
+            `;
+            // 新しいメッセージを一番上に挿入（flex-direction: column-reverseのため）
+            messagesDiv.insertBefore(wrapper, messagesDiv.firstChild);
+        }
+        
+        document.getElementById('chat-send-button').addEventListener('click', sendMessage);
+        document.getElementById('chat-input').addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') sendMessage();
+        });
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const messageText = input.value.trim();
+            if (messageText === '' || !currentChatId) return;
+
+            const messageData = {
+                senderId: currentUser.uid,
+                senderName: currentUser.displayName,
+                senderAvatar: currentUser.photoURL,
+                text: messageText,
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                type: 'text'
+            };
+
+            database.ref(`chats/${currentChatId}/messages`).push(messageData);
+            input.value = '';
+        }
+
+        document.getElementById('file-upload-button').addEventListener('click', () => {
+            document.getElementById('file-upload-input').click();
+        });
+
+        document.getElementById('file-upload-input').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file || !currentChatId) return;
+
+            const fileType = file.type.split('/')[0]; // 'image' or 'video'
+            const filePath = `chat_files/${currentChatId}/${Date.now()}_${file.name}`;
+            const fileRef = storage.ref(filePath);
+
+            fileRef.put(file).then(snapshot => {
+                snapshot.ref.getDownloadURL().then(downloadURL => {
+                    const messageData = {
+                        senderId: currentUser.uid,
+                        senderName: currentUser.displayName,
+                        senderAvatar: currentUser.photoURL,
+                        text: `ファイル: ${file.name}`,
+                        fileURL: downloadURL,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP,
+                        type: fileType // 'image' or 'video'
+                    };
+                    database.ref(`chats/${currentChatId}/messages`).push(messageData);
+                });
+            });
+        });
+
+        // --- モーダル制御 ---
+        function openModal(modalId) { document.getElementById(modalId).style.display = 'flex'; }
+        function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
+
+    </script>
+</body>
+</html>
