@@ -8,12 +8,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.0/firebase-database-compat.js"></script>
     <style>
-        /* CSSは前回のバージョンから、削除ボタンのスタイルが追加された以外は大きな変更はありません */
-        :root {
-            --bg-color: #15202B; --surface-color: #192734; --primary-text-color: #FFFFFF;
-            --secondary-text-color: #8899A6; --accent-color: #1D9BF0; --accent-hover-color: #1A8CD8;
-            --border-color: #38444D; --font-family: "Helvetica Neue", Arial, sans-serif; --danger-color: #E0245E;
-        }
+        /* CSSは変更ありません */
+        :root { --bg-color: #15202B; --surface-color: #192734; --primary-text-color: #FFFFFF; --secondary-text-color: #8899A6; --accent-color: #1D9BF0; --accent-hover-color: #1A8CD8; --border-color: #38444D; --font-family: "Helvetica Neue", Arial, sans-serif; --danger-color: #E0245E; }
         body { margin: 0; font-family: var(--font-family); background-color: var(--bg-color); color: var(--primary-text-color); overflow: hidden; }
         #auth-container { width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
         .auth-card { background-color: var(--surface-color); padding: 40px; border-radius: 16px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4); width: 90%; max-width: 400px; box-sizing: border-box; text-align: center; }
@@ -43,10 +39,7 @@
         .post-header .username { font-weight: bold; }
         .post-header .timestamp { color: var(--secondary-text-color); margin-left: 8px; font-size: 14px; }
         .post-text { white-space: pre-wrap; word-wrap: break-word; margin: 4px 0; }
-        .delete-btn {
-            position: absolute; top: 8px; right: 8px; background: none; border: none; color: var(--secondary-text-color);
-            cursor: pointer; font-size: 18px; padding: 5px; border-radius: 50%; display: none;
-        }
+        .delete-btn { position: absolute; top: 8px; right: 8px; background: none; border: none; color: var(--secondary-text-color); cursor: pointer; font-size: 18px; padding: 5px; border-radius: 50%; display: none; }
         .post-item:hover .delete-btn { display: block; }
         .delete-btn:hover { background-color: rgba(224, 36, 94, 0.1); color: var(--danger-color); }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
@@ -83,7 +76,7 @@
         
         // --- Anti-Trolling Configuration ---
         const POST_COOLDOWN_SECONDS = 15;
-        const BANNED_WORDS = ["バカ", "アホ", "死ね", "殺す"]; // ここにNGワードを追加
+        const BANNED_WORDS = ["バカ", "アホ", "死ね", "殺す"];
 
         // --- Global State & Utils ---
         let currentUser = null;
@@ -99,7 +92,32 @@
             byId('app-container').innerHTML = `<div class="main-layout"><div class="content-column"><header class="app-header"><h2>ホーム</h2><img id="user-avatar-header" class="avatar" alt="My Avatar"></header><div class="post-form-container"><div class="post-form"><img id="user-avatar-form" class="avatar" alt="My Avatar"><div class="post-form-main"><textarea id="post-input" placeholder="いまどうしてる？"></textarea><button id="post-button">ポストする</button></div></div></div><div class="timeline-container" id="timeline-container"></div></div></div>`;
             byId('post-detail-modal').innerHTML = `<div class="modal-content"><div class="modal-header"><h2>ポスト</h2><button class="close-btn" onclick="closeModal('post-detail-modal')">&times;</button></div><div class="modal-body" id="post-detail-body"></div></div>`;
         }
-        setupInitialHTML();
+        
+        // ==========================================================
+        // ★★★★★ 関数の定義を 'function' 形式に変更 ★★★★★
+        // ==========================================================
+        
+        function formatTimestamp(ts) {
+            const now = new Date(), date = new Date(ts), diff = now - date;
+            const diffSec = Math.floor(diff / 1000);
+            if (diffSec < 60) return `${diffSec}秒`;
+            const diffMin = Math.floor(diffSec / 60);
+            if (diffMin < 60) return `${diffMin}分`;
+            const diffHour = Math.floor(diffMin / 60);
+            if (diffHour < 24) return `${diffHour}時間`;
+            return `${Math.floor(diffHour / 24)}日`;
+        }
+
+        function handleReplySubmit(postId) { /* ... */ }
+        function loadReplies(postId) { /* ... */ }
+        function showPostDetail(postId) { /* ... */ }
+        function deletePost(postId) { /* ... */ }
+        function loadPosts() { /* ... */ }
+        function handlePostSubmit() { /* ... */ }
+        function handleProfileSave() { /* ... */ }
+        function showProfileModal() { /* ... */ }
+        function handleLogin() { /* ... */ }
+        function handleSignup() { /* ... */ }
 
         // --- Auth & App Setup ---
         auth.onAuthStateChanged(user => {
@@ -117,8 +135,7 @@
             }
         });
 
-        const setupAppForUser = async (user) => {
-            // Check for admin status
+        async function setupAppForUser(user) {
             const adminSnapshot = await database.ref(`admins/${user.uid}`).once('value');
             currentUser.isAdmin = adminSnapshot.exists();
 
@@ -132,7 +149,7 @@
                 byId('user-avatar-form').src = userData.photoURL || '';
             });
             loadPosts();
-        };
+        }
         
         // --- Event Listeners ---
         function setupGlobalEventListeners() {
@@ -143,120 +160,139 @@
             byId('user-avatar-header').addEventListener('click', showProfileModal);
             byId('post-button').addEventListener('click', handlePostSubmit);
         }
-        setupGlobalEventListeners();
 
-        // --- Core Functions (Auth, Profile) ---
-        const handleSignup = () => { /* ... Unchanged ... */ };
-        const handleLogin = () => { /* ... Unchanged ... */ };
-        const showProfileModal = () => { /* ... Unchanged ... */ };
-        const handleProfileSave = () => { /* ... Unchanged ... */ };
+        // --- Function Implementations ---
         
-        // --- Post & Timeline Functions ---
-        const handlePostSubmit = () => {
-            // 1. Cooldown Check
+        function handleSignup() {
+            const email = byId("signup-email").value, password = byId("signup-password").value, username = byId("signup-username").value;
+            if (!username) return alert("表示名を入力してください。");
+            showLoader();
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(cred => database.ref('users/' + cred.user.uid).set({ username, email, photoURL: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iIzU1NSIvPjwvc3ZnPg==' }))
+                .catch(err => alert(err.message)).finally(hideLoader);
+        };
+        
+        function handleLogin() {
+            const email = byId("login-email").value, password = byId("login-password").value;
+            if (!email || !password) return alert("メールアドレスとパスワードを入力してください。");
+            showLoader();
+            auth.signInWithEmailAndPassword(email, password).catch(err => alert("ログインに失敗しました: " + err.message)).finally(hideLoader);
+        };
+
+        function showProfileModal() {
+            const content = `<h2>プロフィール編集</h2><img id="profile-avatar-preview" src="${currentUser.photoURL}" style="width:100px;height:100px;border-radius:50%;cursor:pointer;object-fit:cover;display:block;margin:0 auto 15px;"><input type="file" id="avatar-upload-input" style="display:none;" accept="image/jpeg,image/png"><label>表示名</label><input type="text" id="profile-username-input" value="${currentUser.displayName}"><div class="modal-controls"><button id="save-profile-btn" class="save-btn">保存</button><button class="cancel-btn" onclick="closeModal('profile-modal')">キャンセル</button></div>`;
+            byId('profile-modal').querySelector('.modal-content').innerHTML = content;
+            openModal('profile-modal');
+            byId('profile-avatar-preview').onclick=()=>byId('avatar-upload-input').click();
+            byId('avatar-upload-input').onchange=e=>{if(e.target.files[0])byId('profile-avatar-preview').src=URL.createObjectURL(e.target.files[0])};
+            byId('save-profile-btn').onclick=handleProfileSave;
+        };
+
+        function handleProfileSave() {
+            const newUsername = byId("profile-username-input").value;
+            const file = byId("avatar-upload-input").files[0];
+            if (!file) {
+                showLoader();
+                database.ref('users/' + currentUser.uid).update({ username: newUsername }).then(()=>closeModal('profile-modal')).catch(err=>alert(err.message)).finally(hideLoader);
+                return;
+            }
+            if (file.size > 1048576) return alert("ファイルサイズが大きすぎます。1MB以下の画像を選択してください。");
+            showLoader();
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => {
+                database.ref('users/' + currentUser.uid).update({ username: newUsername, photoURL: reader.result }).then(()=>closeModal('profile-modal')).catch(err=>alert(err.message)).finally(hideLoader);
+            };
+            reader.onerror = err => { alert("ファイル読込失敗: " + err); hideLoader(); };
+        };
+
+        function handlePostSubmit() {
             const now = Date.now();
             const timeSinceLastPost = (now - currentUser.lastPostTimestamp) / 1000;
             if (timeSinceLastPost < POST_COOLDOWN_SECONDS) {
                 alert(`連投はできません。あと ${Math.ceil(POST_COOLDOWN_SECONDS - timeSinceLastPost)} 秒お待ちください。`);
                 return;
             }
-            
             let text = byId('post-input').value.trim();
             if (text === '') return;
-
-            // 2. NG Word Filter
-            BANNED_WORDS.forEach(word => {
-                const regex = new RegExp(word, 'gi');
-                text = text.replace(regex, '***');
+            BANNED_WORDS.forEach(word => { text = text.replace(new RegExp(word, 'gi'), '***'); });
+            const postData = { uid: currentUser.uid, username: currentUser.displayName, photoURL: currentUser.photoURL, text: text, timestamp: firebase.database.ServerValue.TIMESTAMP };
+            database.ref('posts').push(postData).then(() => {
+                database.ref(`users/${currentUser.uid}/lastPostTimestamp`).set(firebase.database.ServerValue.TIMESTAMP);
+                byId('post-input').value = '';
             });
-
-            const postData = {
-                uid: currentUser.uid,
-                username: currentUser.displayName,
-                photoURL: currentUser.photoURL,
-                text: text,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            };
-
-            const newPostRef = database.ref('posts').push();
-            newPostRef.set(postData)
-                .then(() => {
-                    // Update user's last post timestamp
-                    database.ref(`users/${currentUser.uid}/lastPostTimestamp`).set(firebase.database.ServerValue.TIMESTAMP);
-                    byId('post-input').value = '';
-                })
-                .catch(err => alert("投稿に失敗しました: " + err.message));
         };
 
-        const loadPosts = () => {
+        function loadPosts() {
             const postsRef = database.ref('posts').orderByChild('timestamp').limitToLast(100);
             postsRef.on('value', snapshot => {
                 const timeline = byId('timeline-container');
                 timeline.innerHTML = '';
                 const posts = [];
                 snapshot.forEach(child => { posts.push({ id: child.key, ...child.val() }); });
-                
                 posts.reverse().forEach(post => {
                     const postEl = document.createElement('div');
                     postEl.className = 'post-item';
-                    let adminButtonHTML = '';
-                    if (currentUser && currentUser.isAdmin) {
-                        adminButtonHTML = `<button class="delete-btn" title="投稿を削除">&times;</button>`;
-                    }
-                    postEl.innerHTML = `
-                        <img src="${post.photoURL}" class="avatar" alt="${post.username}'s avatar">
-                        <div class="post-content">
-                            <div class="post-header">
-                                <span class="username">${post.username}</span>
-                                <span class="timestamp">${formatTimestamp(post.timestamp)}</span>
-                            </div>
-                            <div class="post-text">${post.text.replace(/</g, "&lt;")}</div>
-                        </div>
-                        ${adminButtonHTML}`;
-                    
-                    postEl.addEventListener('click', (e) => {
-                        if (e.target.classList.contains('delete-btn')) return; // Don't open detail if delete is clicked
-                        showPostDetail(post.id);
-                    });
-                    
+                    const adminButtonHTML = currentUser && currentUser.isAdmin ? `<button class="delete-btn" title="投稿を削除">&times;</button>` : '';
+                    postEl.innerHTML = `<img src="${post.photoURL}" class="avatar"><div class="post-content"><div class="post-header"><span class="username">${post.username}</span><span class="timestamp">${formatTimestamp(post.timestamp)}</span></div><div class="post-text">${post.text.replace(/</g, "&lt;")}</div></div>${adminButtonHTML}`;
+                    postEl.addEventListener('click', (e) => { if (!e.target.classList.contains('delete-btn')) showPostDetail(post.id); });
                     if (currentUser.isAdmin) {
                         const deleteBtn = postEl.querySelector('.delete-btn');
-                        if (deleteBtn) {
-                            deleteBtn.addEventListener('click', () => deletePost(post.id));
-                        }
+                        if (deleteBtn) deleteBtn.addEventListener('click', () => deletePost(post.id));
                     }
-
                     timeline.appendChild(postEl);
                 });
             });
         };
-
-        const deletePost = (postId) => {
-            if (confirm('本当にこの投稿と関連する返信をすべて削除しますか？この操作は元に戻せません。')) {
+        
+        function deletePost(postId) {
+            if (confirm('本当にこの投稿と関連する返信をすべて削除しますか？')) {
                 const updates = {};
                 updates[`/posts/${postId}`] = null;
                 updates[`/replies/${postId}`] = null;
-                database.ref().update(updates)
-                    .then(() => alert("投稿を削除しました。"))
-                    .catch(err => alert("削除に失敗しました: " + err.message));
+                database.ref().update(updates).catch(err => alert("削除に失敗: " + err.message));
             }
         };
 
-        // --- Reply & Detail Functions (Unchanged) ---
-        const showPostDetail = (postId) => { /* ... */ };
-        const loadReplies = (postId) => { /* ... */ };
-        const handleReplySubmit = (postId) => { /* ... */ };
-        const formatTimestamp = (ts) => { /* ... */ };
+        function showPostDetail(postId) {
+            const body = byId("post-detail-body");
+            body.innerHTML="読み込み中...";
+            openModal("post-detail-modal");
+            database.ref(`posts/${postId}`).once("value",t=>{
+                const n=t.val();
+                if (!n) { closeModal('post-detail-modal'); return; }
+                body.innerHTML=`<div class="post-item" style="cursor:default;"><img src="${n.photoURL}" class="avatar"><div class="post-content"><div class="post-header"><span class="username">${n.username}</span></div><div class="post-text" style="font-size: 1.2em;">${n.text.replace(/</g,"&lt;")}</div><div class="timestamp">${new Date(n.timestamp).toLocaleString()}</div></div></div><hr style="border-color: var(--border-color);"><div class="post-form-container"><textarea id="reply-input" placeholder="返信をポスト" style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; min-height: 40px; width: 100%; box-sizing: border-box;"></textarea><button id="reply-button" style="background-color: var(--accent-color); color: white; border: none; padding: 6px 12px; border-radius: 9999px; font-weight: bold; cursor: pointer; float: right; margin-top: 8px;">返信する</button></div><div id="replies-container"></div>`;
+                byId("reply-button").addEventListener("click",()=>handleReplySubmit(postId));
+                loadReplies(postId);
+            });
+        }
+        
+        function loadReplies(postId) {
+            database.ref(`replies/${postId}`).orderByChild("timestamp").on("value",e=>{
+                const t=byId("replies-container");
+                t.innerHTML="";
+                e.forEach(e=>{
+                    const n=e.val(),o=document.createElement("div");
+                    o.className="post-item";
+                    o.innerHTML=`<img src="${n.photoURL}" class="avatar"><div class="post-content"><div class="post-header"><span class="username">${n.username}</span></div><div class="post-text">${n.text.replace(/</g,"&lt;")}</div></div>`;
+                    t.appendChild(o);
+                });
+            });
+        }
+        
+        function handleReplySubmit(postId) {
+            const e=byId("reply-input").value.trim();
+            if(""!==e){
+                let filteredText = e;
+                BANNED_WORDS.forEach(word => { filteredText = filteredText.replace(new RegExp(word, 'gi'), '***'); });
+                const t={uid:currentUser.uid,username:currentUser.displayName,photoURL:currentUser.photoURL,text:filteredText,timestamp:firebase.database.ServerValue.TIMESTAMP};
+                database.ref(`replies/${postId}`).push(t).then(()=>{byId("reply-input").value=""});
+            }
+        }
 
-        // --- Unchanged Dummy Functions for brevity ---
-        handleSignup = () => {const e=byId("signup-email").value,t=byId("signup-password").value,n=byId("signup-username").value;n?(showLoader(),auth.createUserWithEmailAndPassword(e,t).then(e=>database.ref("users/"+e.user.uid).set({username:n,email:e.user.email,photoURL:"data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI1MCIgZmlsbD0iIzU1NSIvPjwvc3ZnPg=="})).catch(e=>alert(e.message)).finally(hideLoader)):alert("表示名を入力してください。")};
-        handleLogin = () => {const e=byId("login-email").value,t=byId("login-password").value;e&&t?(showLoader(),auth.signInWithEmailAndPassword(e,t).catch(e=>alert("ログインに失敗しました: "+e.message)).finally(hideLoader)):alert("メールアドレスとパスワードを入力してください。")};
-        showProfileModal = () => {const e=`<h2>プロフィール編集</h2><img id="profile-avatar-preview" src="${currentUser.photoURL}" style="width:100px;height:100px;border-radius:50%;cursor:pointer;object-fit:cover;display:block;margin:0 auto 15px;"><input type="file" id="avatar-upload-input" style="display:none;" accept="image/jpeg,image/png"><label>表示名</label><input type="text" id="profile-username-input" value="${currentUser.displayName}"><div class="modal-controls"><button id="save-profile-btn" class="save-btn">保存</button><button class="cancel-btn" onclick="closeModal('profile-modal')">キャンセル</button></div>`;byId("profile-modal").querySelector(".modal-content").innerHTML=e,openModal("profile-modal"),byId("profile-avatar-preview").onclick=()=>byId("avatar-upload-input").click(),byId("avatar-upload-input").onchange=e=>{e.target.files[0]&&(byId("profile-avatar-preview").src=URL.createObjectURL(e.target.files[0]))},byId("save-profile-btn").onclick=handleProfileSave};
-        handleProfileSave = () => {const e=byId("profile-username-input").value,t=byId("avatar-upload-input").files[0];if(t){if(t.size>1048576)return void alert("ファイルサイズが大きすぎます。1MB以下の画像を選択してください。");showLoader();const n=new FileReader;n.readAsDataURL(t),n.onload=()=>{database.ref("users/"+currentUser.uid).update({username:e,photoURL:n.result}).then(()=>closeModal("profile-modal")).catch(e=>alert(e.message)).finally(hideLoader)},n.onerror=e=>{alert("ファイル読込失敗: "+e),hideLoader()}}else showLoader(),database.ref("users/"+currentUser.uid).update({username:e}).then(()=>closeModal("profile-modal")).catch(e=>alert(e.message)).finally(hideLoader)};
-        showPostDetail = postId => {const e=byId("post-detail-body");e.innerHTML="読み込み中...",openModal("post-detail-modal"),database.ref(`posts/${postId}`).once("value",t=>{const n=t.val();e.innerHTML=`\n                    <div class="post-item" style="cursor:default;">\n                        <img src="${n.photoURL}" class="avatar">\n                        <div class="post-content">\n                            <div class="post-header"><span class="username">${n.username}</span></div>\n                            <div class="post-text" style="font-size: 1.2em;">${n.text.replace(/</g,"&lt;")}</div>\n                            <div class="timestamp">${new Date(n.timestamp).toLocaleString()}</div>\n                        </div>\n                    </div>\n                    <hr style="border-color: var(--border-color);">\n                    <div class="post-form-container">\n                        <textarea id="reply-input" placeholder="返信をポスト" style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; min-height: 40px;"></textarea>\n                        <button id="reply-button" style="background-color: var(--accent-color); color: white; border: none; padding: 6px 12px; border-radius: 9999px; font-weight: bold; cursor: pointer; float: right; margin-top: 8px;">返信する</button>\n                    </div>\n                    <div id="replies-container"></div>\n                `,byId("reply-button").addEventListener("click",()=>handleReplySubmit(postId)),loadReplies(postId)})};
-        loadReplies = postId => {database.ref(`replies/${postId}`).orderByChild("timestamp").on("value",e=>{const t=byId("replies-container");t.innerHTML="",e.forEach(e=>{const n=e.val(),o=document.createElement("div");o.className="post-item",o.innerHTML=`\n                        <img src="${n.photoURL}" class="avatar">\n                        <div class="post-content">\n                            <div class="post-header"><span class="username">${n.username}</span></div>\n                            <div class="post-text">${n.text.replace(/</g,"&lt;")}</div>\n                        </div>\n                    `,t.appendChild(o)})})};
-        handleReplySubmit = postId => {const e=byId("reply-input").value.trim();if(""!==e){const t={uid:currentUser.uid,username:currentUser.displayName,photoURL:currentUser.photoURL,text:e,timestamp:firebase.database.ServerValue.TIMESTAMP};database.ref(`replies/${postId}`).push(t).then(()=>{byId("reply-input").value=""})}};
-        formatTimestamp = ts => {const e=new Date,t=new Date(ts),n=(e-t)/1e3;if(n<60)return`${Math.floor(n)}秒`;const o=n/60;if(o<60)return`${Math.floor(o)}分`;const a=o/60;if(a<24)return`${Math.floor(a)}時間`;const r=a/24;return`${Math.floor(r)}日`};
+        // --- Initial Script Execution ---
+        setupInitialHTML();
+        setupGlobalEventListeners();
 
     </script>
 </body>
